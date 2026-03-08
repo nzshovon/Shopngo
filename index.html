@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Eid Shopping Game</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Firebase (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root{
+      --ink:#0B1220;
+      --muted:#6B7280;
+      --bg:#F6F7F9;
+      --card:#ffffff;
+      --line:#EEF0F3;
+      --accent:#111827; /* no logo/brand requested */
+      --shadow: 0 14px 34px rgba(11,18,32,.10);
+      --tileShadow: 0 12px 24px rgba(11,18,32,.08);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1000px 700px at 50% -250px, rgba(17,24,39,.06), transparent 55%), var(--bg);
+      color: var(--ink);
+      overflow:auto;
+      font-family:"Hind Siliguri", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    }
+    :lang(en){font-family:"Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;}
+    button,input,textarea{font-family:inherit}
+
+    /* Fluid app */
+    .app{min-height:100vh; width:100%; display:flex; justify-content:center; padding: clamp(10px, 2vw, 22px);}
+    .frame{
+      width: min(1200px, 100%);
+      min-height: calc(100vh - clamp(20px, 4vw, 44px));
+      background:#fff;
+      border:1px solid rgba(17,24,39,.06);
+      border-radius: clamp(16px, 2vw, 26px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    @media (max-width: 640px){ .app{padding:0} .frame{border-radius:0; border:0; min-height:100vh} }
+
+    .screen{display:none; min-height:100vh; flex-direction:column;}
+    .screen.active{display:flex;}
+
+    /* Landing: only play button (bg image external) */
+    .landing{
+      background: url('assets/landingpage.jpg') center / cover no-repeat;
+      flex:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding: 0 18px clamp(60px, 11vh, 160px);
+    }
+    .btn{
+      border:0; background: var(--accent); color:#fff;
+      font-weight:1000; padding:16px 26px; border-radius:18px;
+      cursor:pointer; width:min(420px, 92%);
+      box-shadow: 0 18px 32px rgba(17,24,39,.18);
+      font-size: 18px;
+    }
+    /* Pixel-art arcade start button */
+    .btn-start{
+      font-family: "Roboto", "Hind Siliguri", system-ui, sans-serif;
+      font-size: clamp(20px, 3.5vw, 28px);
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #fff;
+      background: #3dbc2a;
+      border: 0;
+      cursor: pointer;
+      width: min(480px, 88%);
+      padding: 22px 36px;
+      border-radius: 10px;
+      /* Pixel-art 3-D bevel */
+      box-shadow:
+        0 6px 0 #1d7a14,
+        0 10px 0 rgba(0,0,0,.35),
+        inset 0 2px 0 rgba(255,255,255,.28),
+        inset 0 -3px 0 rgba(0,0,0,.18);
+      /* Outer dark frame like the reference */
+      outline: 4px solid #1a5c11;
+      outline-offset: 2px;
+      position: relative;
+      transition: transform .08s ease, box-shadow .08s ease;
+      text-shadow: 2px 2px 0 rgba(0,0,0,.35);
+    }
+    .btn-start:hover{
+      background: #4fd93a;
+      box-shadow:
+        0 6px 0 #2a9e1e,
+        0 10px 0 rgba(0,0,0,.30),
+        inset 0 2px 0 rgba(255,255,255,.32),
+        inset 0 -3px 0 rgba(0,0,0,.14);
+    }
+    .btn-start:active{
+      transform: translateY(5px);
+      box-shadow:
+        0 1px 0 #1d7a14,
+        0 3px 0 rgba(0,0,0,.25),
+        inset 0 2px 0 rgba(255,255,255,.14),
+        inset 0 -1px 0 rgba(0,0,0,.12);
+    }
+    /* Pixel corner highlights */
+    .btn-start::before{
+      content:"";
+      position:absolute;
+      top:4px; left:6px;
+      width:calc(100% - 12px); height:3px;
+      background: rgba(255,255,255,.25);
+      border-radius: 2px;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{background:#fff; color: var(--accent); border:2px solid rgba(17,24,39,.14); box-shadow:none;}
+    .btn.ghost{background:#fff; color:#374151; border:2px solid #E5E7EB; box-shadow:none;}
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:5;
+      background: rgba(255,255,255,.90);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+      padding: 12px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .title{font-size:18px; font-weight:1000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.02em;}
+    .navBtns{display:flex; align-items:center; gap:10px;}
+    .iconBtn{
+      width:44px;height:44px; border-radius:16px;
+      border:1px solid var(--line); background:#FAFBFC;
+      display:grid; place-items:center; cursor:pointer;
+      transition: transform .08s ease, border-color .12s ease, filter .12s ease;
+    }
+    .iconBtn:hover{filter:brightness(.99); border-color: rgba(17,24,39,.18);}
+    .iconBtn:active{transform: translateY(1px)}
+    .iconBtn svg{width:20px;height:20px; color:#6B7280}
+
+    .content{padding: clamp(14px, 2.2vw, 20px);}
+    .helloText h2{margin:0; font-size: clamp(22px, 3.2vw, 30px); font-weight:1000; letter-spacing:-.02em;}
+    .helloText p{margin:6px 0 0; font-weight:800; color:#6B7280; font-size: clamp(12px, 1.6vw, 14px);}
+
+    /* Category cards: 1 per row, premium */
+    .menuGrid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px;}
+    .catCard{
+      background:#fff;
+      border:1px solid rgba(17,24,39,.08);
+      border-radius: 24px;
+      box-shadow: var(--tileShadow);
+      padding: 16px 16px;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      display:flex; align-items:center; gap:14px;
+      position:relative; overflow:visible;
+      min-height: 128px;
+    }
+    .catCard:before{
+      content:"";
+      position:absolute;
+      inset:-60px -60px auto auto;
+      width:220px;height:220px;border-radius:999px;
+      background: rgba(17,24,39,.03);
+      transform: rotate(20deg);
+      pointer-events:none;
+    }
+    .catCard:hover{transform: translateY(-2px); border-color: rgba(17,24,39,.18); box-shadow: 0 22px 44px rgba(11,18,32,.12);}
+    .catHero{
+      width:100px;height:100px;border-radius:22px;
+      flex:0 0 auto;
+      position:relative; z-index:1;
+      display:grid; place-items:center;
+      overflow:visible;
+    }
+    .catHero svg{width:100px; height:100px;}
+    .catMeta{z-index:1; min-width:0;}
+    .catMeta .h{font-size:20px; font-weight:1000; margin:0; letter-spacing:-.02em;}
+    .catMeta .d{margin:8px 0 0; font-size:14px; font-weight:800; color:#6B7280; line-height:1.35;}
+    .catMeta .chips{margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;}
+    .miniChip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(17,24,39,.04);
+      border:1px solid rgba(17,24,39,.10);
+      color:#374151;
+      font-weight:900;
+      font-size:13px;
+    }
+    .miniChip .b{width:10px;height:10px;border-radius:50%; background: rgba(17,24,39,.55);}
+
+    /* HUD */
+    .hud{display:flex; gap:10px; padding: 12px 14px; background:#fff; border-bottom:1px solid var(--line);
+          position:sticky; top:0; z-index:4; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+    .hudLeft{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .pill{border:1px solid var(--line); border-radius:18px; padding:10px 12px; background:#fff;
+           box-shadow: 0 10px 18px rgba(11,18,32,.04); min-width: 150px;}
+    .pill .k{font-size:11px; color: rgba(17,24,39,.65); font-weight:1000; letter-spacing:.12em; text-transform:uppercase;
+              font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .pill .v{font-size:22px; font-weight:1000; margin-top:2px; font-variant-numeric: tabular-nums;
+              font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+
+    .gameWrap{padding: clamp(12px, 2vw, 18px); display:flex; flex-direction:column; gap: 14px;}
+    .trayHeader{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+    .trayHeader .label{font-size:12px; font-weight:1000; color:#9CA3AF; text-transform:uppercase; letter-spacing:.14em;
+                        margin:0; font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .lives{display:flex; align-items:center; gap:8px; font-weight:1000; color:#EF4444;
+            font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .hearts{display:flex; gap:3px; align-items:center;}
+    .hrt{width:24px;height:24px;display:grid;place-items:center;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;}
+    .hrt.lost{opacity:.22; transform:scale(.75);}
+    .hrt.pop{animation:hrtPop .32s cubic-bezier(.34,1.56,.64,1);}
+    @keyframes hrtPop{0%{transform:scale(1.55)}55%{transform:scale(.88)}100%{transform:scale(1)}}
+
+    /* Tray */
+    .tray{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(clamp(128px, 14vw, 200px), 1fr));
+      gap: clamp(10px, 1.3vw, 14px);
+      padding: clamp(10px, 1.4vw, 14px);
+      border-radius: 26px;
+      background: rgba(255,255,255,.90);
+      border: 1px solid rgba(17,24,39,.08);
+      box-shadow: 0 18px 38px rgba(11,18,32,.06);
+    }
+    .item{
+      background: #ffffff;
+      border:1px solid rgba(17,24,39,.10);
+      border-radius: 22px;
+      padding: 14px 12px 12px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap: 10px; cursor:pointer; user-select:none;
+      min-height: clamp(130px, 15vw, 180px);
+      position:relative; overflow:hidden;
+      box-shadow: 0 10px 22px rgba(11,18,32,.08);
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, opacity .12s ease, filter .12s ease;
+    }
+        .item:hover{transform: translateY(-2px); border-color: rgba(17,24,39,.18); box-shadow: 0 22px 44px rgba(11,18,32,.12); filter:saturate(1.02);}
+    .item:active{transform: translateY(-1px);}
+    .item.picked{opacity:.18; pointer-events:none; transform:none; box-shadow:none;}
+    .sprite{
+      width: clamp(56px, 5.5vw, 72px);
+      height: clamp(56px, 5.5vw, 72px);
+      border-radius: 18px;
+      background: linear-gradient(145deg, #ffffff, #f0f4f8);
+      border:1px solid rgba(17,24,39,.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 20px rgba(11,18,32,.07);
+      z-index:1;
+      display:grid;
+      place-items:center;
+    }
+    .sprite svg{width:70%; height:70%; display:block;}
+    .item .txt{font-size: clamp(12px, 1.7vw, 14px); color:#5B6473; font-weight:1000; text-align:center; line-height:1.15; padding:0 4px; z-index:1; word-break:break-word;}
+
+    /* Bag zone: larger with shape + handle + item stack */
+    .bagTitle{font-size:12px; font-weight:1000; color:#9CA3AF; text-transform:uppercase; letter-spacing:.14em; margin: 4px 0 8px;
+               font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .bagWrap{
+      border-radius: 34px;
+      background: #F9FAFB;
+      border: 2px solid rgba(17,24,39,.10);
+      box-shadow: 0 14px 30px rgba(11,18,32,.10);
+      padding: 18px 16px 16px;
+      position:relative; overflow:hidden;
+      min-height: clamp(280px, 30vh, 460px);
+    }
+
+        .bagInner{
+      position:relative;
+      height: 100%;
+      display:flex;
+      flex-direction:column;
+    }
+    .bagGrid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap:12px;
+      padding-top:8px;
+      max-height: 60%;
+      overflow:auto;
+    }
+    .chip{
+      display:flex; align-items:center; gap:10px;
+      padding:12px 12px;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(255,255,255,.65);
+      box-shadow: 0 10px 18px rgba(11,18,32,.07);
+      min-width:0;
+    }
+    .chip.good{background:#ECFDF5; border-color:#BBF7D0; color:#065F46}
+    .chip.bad{background:#FEF2F2; border-color:#FECACA; color:#7F1D1D}
+    .chip span{font-size:14px; font-weight:1000; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+    .bagIllustration{
+      flex:1;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding-top:14px;
+      position:relative;
+    }
+    .bagSvg{width:min(520px, 92%); height:auto; filter: drop-shadow(0 24px 38px rgba(11,18,32,.20));}
+
+    /* Fly animation layer */
+    .flyLayer{position:fixed; inset:0; pointer-events:none; z-index: 2000;}
+    .fly{position:absolute; width:66px; height:66px; border-radius:22px;
+          background: linear-gradient(180deg, #ffffff, #f4f6f9);
+          box-shadow: 0 18px 34px rgba(11,18,32,.18);
+          border:1px solid rgba(17,24,39,.10);
+          transform: translate(-50%,-50%);
+          display:grid; place-items:center;
+    }
+    .fly svg{width:56%; height:56%;}
+
+    /* ── Modal base ── */
+    .backdrop{position:fixed;inset:0;background:rgba(11,18,32,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:999;backdrop-filter:blur(3px);}
+    .backdrop.show{display:flex;}
+    .modal{
+      width:min(520px,100%);background:#fff;border-radius:26px;
+      box-shadow:var(--shadow);overflow:hidden;
+      transform:scale(.93) translateY(18px);opacity:0;
+      animation:modalIn .30s cubic-bezier(.34,1.35,.64,1) forwards;
+    }
+    @keyframes modalIn{to{transform:scale(1) translateY(0);opacity:1;}}
+
+    /* ── Result modal glowing animated border ── */
+    .modal.win{
+      border:none;
+      outline:3px solid #22c55e;
+      box-shadow:0 0 0 3px #22c55e, 0 0 28px 6px rgba(34,197,94,.28), 0 20px 50px rgba(34,197,94,.18);
+      animation:modalIn .30s cubic-bezier(.34,1.35,.64,1) forwards, winPulse 1.8s ease-in-out .35s infinite;
+    }
+    .modal.lose{
+      border:none;
+      outline:3px solid #ef4444;
+      box-shadow:0 0 0 3px #ef4444, 0 0 28px 6px rgba(239,68,68,.28), 0 20px 50px rgba(239,68,68,.18);
+      animation:modalIn .30s cubic-bezier(.34,1.35,.64,1) forwards, losePulse 1.8s ease-in-out .35s infinite;
+    }
+    @keyframes winPulse{
+      0%,100%{box-shadow:0 0 0 3px #22c55e, 0 0 18px 4px rgba(34,197,94,.18), 0 20px 50px rgba(34,197,94,.16);}
+      50%     {box-shadow:0 0 0 4px #4ade80, 0 0 38px 10px rgba(74,222,128,.36), 0 20px 50px rgba(34,197,94,.22);}
+    }
+    @keyframes losePulse{
+      0%,100%{box-shadow:0 0 0 3px #ef4444, 0 0 18px 4px rgba(239,68,68,.18), 0 20px 50px rgba(239,68,68,.16);}
+      50%     {box-shadow:0 0 0 4px #f87171, 0 0 38px 10px rgba(248,113,113,.36), 0 20px 50px rgba(239,68,68,.22);}
+    }
+    .modal.win  .modalSkin{background:radial-gradient(560px 200px at 50% 0%,rgba(34,197,94,.09),transparent 58%),#fff;}
+    .modal.lose .modalSkin{background:radial-gradient(560px 200px at 50% 0%,rgba(239,68,68,.09),transparent 58%),#fff;}
+
+    /* ── Result modal header ── */
+    .resHeader{position:relative;overflow:hidden;padding:30px 24px 26px;text-align:center;}
+    .modal.win  .resHeader{background:linear-gradient(155deg,#14532d 0%,#16a34a 55%,#4ade80 100%);}
+    .modal.lose .resHeader{background:linear-gradient(155deg,#7f1d1d 0%,#dc2626 55%,#f87171 100%);}
+    .resEmoji{font-size:56px;line-height:1;margin-bottom:10px;position:relative;z-index:1;
+              animation:emojiPop .6s cubic-bezier(.34,1.56,.64,1) .2s both;}
+    @keyframes emojiPop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+    .resHTitle{font-size:22px;font-weight:1000;color:#fff;letter-spacing:-.02em;position:relative;z-index:1;
+               text-shadow:0 2px 8px rgba(0,0,0,.25);}
+    .resHSub{font-size:13px;font-weight:800;color:rgba(255,255,255,.88);margin-top:6px;
+             line-height:1.45;position:relative;z-index:1;padding:0 8px;}
+    /* Stats strip */
+    .resStat{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+    .resStatTile{flex:1;padding:14px 8px;text-align:center;}
+    .resStatVal{font-size:21px;font-weight:1000;font-family:"Roboto",system-ui;color:var(--ink);}
+    .resStatLbl{font-size:10px;font-weight:1000;color:#9CA3AF;text-transform:uppercase;letter-spacing:.1em;
+                margin-top:3px;font-family:"Roboto","Hind Siliguri",system-ui;}
+    .resStatDiv{width:1px;background:var(--line);flex-shrink:0;}
+    /* Action area */
+    .resActions{padding:14px 16px 18px;display:flex;flex-direction:column;gap:9px;}
+    .resActions .btn{width:100%;}
+    /* keep legacy classes working for other modals */
+    .resultBadge{display:none;}
+    .modalSkin{padding:22px 20px 14px;position:relative;overflow:hidden;}
+    .mTitle{margin:0;font-size:21px;font-weight:1000;text-align:center;letter-spacing:-.02em;color:rgba(11,18,32,.92);}
+    .mText{margin:8px 0 0;font-size:14px;font-weight:900;color:#4B5563;text-align:center;line-height:1.4;}
+
+    /* ── Brief modal redesign ── */
+    #modal-brief .modal{ overflow:visible; }
+    .briefHero{
+      position:relative; text-align:center;
+      padding:28px 24px 20px; overflow:hidden;
+      border-radius:26px 26px 0 0;
+    }
+    .briefHeroBg{
+      position:absolute;inset:0;border-radius:26px 26px 0 0;
+      background:linear-gradient(145deg,var(--bClr1,#FFF0F7),var(--bClr2,#FCE7F3));
+      z-index:0;
+    }
+    .briefHeroBg::after{
+      content:"";position:absolute;inset:0;
+      background:radial-gradient(circle at 80% 20%, rgba(255,255,255,.55), transparent 60%);
+    }
+    .briefAvatarWrap{
+      position:relative;z-index:1;display:inline-block;
+      width:96px;height:96px;margin:0 auto 10px;
+    }
+    .briefAvatarWrap svg{width:96px;height:96px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.12));}
+    .briefTagline{
+      position:relative;z-index:1;
+      font-size:11px;font-weight:1000;letter-spacing:.16em;text-transform:uppercase;
+      font-family:"Roboto",system-ui; color:var(--bAccent,#BE185D);
+      margin:0 0 5px;
+    }
+    .briefHeroTitle{
+      position:relative;z-index:1;
+      font-size:22px;font-weight:1000;letter-spacing:-.02em;
+      color:var(--ink);margin:0 0 8px;
+    }
+    .briefDesc{
+      position:relative;z-index:1;
+      font-size:13px;font-weight:700;color:#6B7280;
+      line-height:1.5;margin:0;padding:0 4px;
+    }
+    .briefBody{ padding:16px 18px 4px; }
+    .briefSectionLbl{
+      font-size:10px;font-weight:1000;color:#9CA3AF;text-transform:uppercase;letter-spacing:.14em;
+      font-family:"Roboto","Hind Siliguri",system-ui;margin:0 0 10px;
+    }
+    .briefRow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+    .bItem{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:7px 10px;border-radius:12px;
+      background:#F9FAFB;border:1.5px solid var(--line);
+      font-size:12px;font-weight:900;color:var(--ink);
+      box-shadow:0 2px 8px rgba(11,18,32,.05);
+      opacity:0;animation:bItemIn .28s ease both;
+      transition:background .15s;
+    }
+    .bItem:hover{background:#fff;border-color:rgba(17,24,39,.18);}
+    @keyframes bItemIn{from{opacity:0;transform:translateY(6px) scale(.93)}to{opacity:1;transform:none}}
+    .briefTip{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:11px 13px;border-radius:14px;
+      background:linear-gradient(135deg,#FFFBEB,#FEF3C7);
+      border:1px solid #FDE68A;margin-bottom:2px;
+    }
+    .briefTipIcon{font-size:16px;flex-shrink:0;line-height:1.3;}
+    .briefTipText{font-size:12px;font-weight:800;color:#92400E;line-height:1.45;}
+    /* legacy compat */
+    .briefTop,.briefCopy,.briefStats,.briefRule,.briefAvatar{display:none!important;}
+
+    .ownBadge{
+      display:inline-flex;align-items:center;gap:5px;
+      margin-top:10px;padding:5px 12px;border-radius:20px;
+      background:linear-gradient(135deg,#FFFBEB,#FEF3C7);
+      border:1px solid #FDE68A;
+      font-size:11px;font-weight:900;color:#B45309;
+      letter-spacing:.02em;
+    }
+
+    /* ── Toggle switch ── */
+    .toggle{display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .toggleSlider{
+      width:44px;height:24px;border-radius:12px;
+      background:#D1D5DB;position:relative;
+      transition:background .2s;flex-shrink:0;
+    }
+    .toggleSlider::after{
+      content:"";position:absolute;
+      width:18px;height:18px;border-radius:50%;
+      background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.22);
+      top:3px;left:3px;transition:transform .2s;
+    }
+    .toggle input:checked + .toggleSlider{background:#22c55e;}
+    .toggle input:checked + .toggleSlider::after{transform:translateX(20px);}
+    .setCardSubtitle{font-size:10px;font-weight:1000;color:#9CA3AF;text-transform:uppercase;
+      letter-spacing:.12em;font-family:"Roboto",system-ui;margin:10px 0 8px;}
+
+    /* ── Misc ── */
+    .field{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+    .field label{font-size:11px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase;color:#9CA3AF;
+                 font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;text-align:center;}
+    .input{width:100%;border:2px solid #E5E7EB;outline:none;font-size:18px;padding:14px 12px;border-radius:16px;
+           font-weight:1000;text-align:center;letter-spacing:.02em;background:#fff;}
+    .input:focus{border-color:rgba(17,24,39,.45);box-shadow:0 0 0 4px rgba(17,24,39,.12);}
+    .modalActions{padding:12px 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .modalActions.one{grid-template-columns:1fr;justify-items:center;}
+    .modalActions.one .btn{width:min(360px,100%);}
+    /* Ad modal — wider and image fills full width */
+    .modal-ad-wide{ width: min(720px, 96vw) !important; }
+    .adImg{width:100%;display:block;overflow:hidden;}
+    .adImg img{display:block;width:100%;height:auto;max-height:80vh;object-fit:contain;}
+    @keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none;}}
+
+
+    /* ── Settings redesign ── */
+    .settingsWrap{ padding:16px 16px 32px; display:flex; flex-direction:column; gap:14px; }
+    .setCard{
+      background:#fff; border:1px solid var(--line); border-radius:20px;
+      padding:16px 16px 14px; box-shadow:0 6px 18px rgba(11,18,32,.05);
+    }
+    .setCardTitle{
+      font-size:11px; font-weight:1000; letter-spacing:.12em; text-transform:uppercase;
+      color:#9CA3AF; font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;
+      margin:0 0 14px; padding-bottom:10px; border-bottom:1px solid var(--line);
+      display:flex; align-items:center; gap:6px;
+    }
+    .setRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid rgba(17,24,39,.05); }
+    .setRow:last-child{ border-bottom:none; padding-bottom:0; }
+    .setLabel{ font-size:13px; font-weight:900; color:var(--ink); }
+    .setHint{ display:block; font-size:11px; font-weight:700; color:#9CA3AF; margin-top:2px; }
+    .setNum{ width:72px; padding:8px 10px; border-radius:12px; border:1.5px solid #E5E7EB; outline:none;
+             font-weight:900; font-size:15px; text-align:center; background:#fff;
+             font-family:"Roboto","Hind Siliguri",system-ui,sans-serif; }
+    .setNum:focus{ border-color:rgba(17,24,39,.45); box-shadow:0 0 0 3px rgba(17,24,39,.10); }
+    .setTxt{ width:100%; padding:10px 12px; border-radius:12px; border:1.5px solid #E5E7EB; outline:none;
+             font-weight:800; font-size:14px; background:#fff; margin-top:6px;
+             font-family:"Roboto","Hind Siliguri",system-ui,sans-serif; }
+    .setTxt:focus{ border-color:rgba(17,24,39,.45); box-shadow:0 0 0 3px rgba(17,24,39,.10); }
+    /* Stat tiles */
+    .statGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+    .statTile{
+      background:linear-gradient(145deg,#F9FAFB,#F3F4F6);
+      border:1px solid var(--line); border-radius:14px;
+      padding:10px 12px; text-align:center;
+    }
+    .statTile .sv{ font-size:22px; font-weight:1000; font-family:"Roboto",system-ui,sans-serif; color:var(--ink); }
+    .statTile .sk{ font-size:10px; font-weight:1000; color:#9CA3AF; text-transform:uppercase; letter-spacing:.1em;
+                   font-family:"Roboto","Hind Siliguri",system-ui,sans-serif; margin-top:2px; }
+    .statTile.green .sv{ color:#16A34A; }
+    .statTile.red .sv{ color:#DC2626; }
+    .statTile.blue .sv{ color:#2563EB; }
+    /* Category bar chart */
+    .catBarList{ display:flex; flex-direction:column; gap:8px; }
+    .catBarRow{ display:flex; align-items:center; gap:10px; }
+    .catBarLabel{ font-size:12px; font-weight:900; color:var(--ink); width:60px; flex-shrink:0; }
+    .catBarTrack{ flex:1; height:8px; background:#F3F4F6; border-radius:99px; overflow:hidden; }
+    .catBarFill{ height:100%; border-radius:99px; background:var(--accent); transition:width .6s cubic-bezier(.25,.46,.45,.94); }
+    .catBarCount{ font-size:12px; font-weight:1000; color:#6B7280; width:24px; text-align:right; flex-shrink:0; font-family:"Roboto",system-ui,sans-serif; }
+    /* Save row */
+    .setFooter{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+    .section{background:#FAFBFC; border:1px solid var(--line); border-radius:20px; padding:14px; margin-bottom:14px; box-shadow: 0 10px 18px rgba(11,18,32,.03);}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+    .row label{font-size:14px; font-weight:1000; color: var(--ink)}
+    .row small{font-size:12px; color: var(--muted); font-weight:800}
+    .num, .txt, textarea{width:160px; padding:10px 12px; border-radius:16px; border:1px solid #E5E7EB; outline:none; font-weight:900; font-size:14px; text-align:center;
+                         background:#fff; font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .txt{width:100%; text-align:left; font-weight:800}
+    textarea{width:100%; text-align:left; font-weight:700; font-size:12px; min-height: 240px; resize: vertical; line-height:1.35;
+             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .syncPill{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:#fff;
+              font-weight:900; font-size:12px; color:#374151; font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;}
+    .dot2{width:10px;height:10px;border-radius:50%; background:#9CA3AF}
+    .dot2.on{background:#22C55E}
+    .dot2.err{background:#EF4444}
+    .tiny{font-size:12px;font-weight:800;color:var(--muted);line-height:1.4;margin:10px 0 0}
+
+    @keyframes shake{20%{transform:translateX(-3px) rotate(-.8deg)}40%{transform:translateX(3px) rotate(.8deg)}60%{transform:translateX(-2px)}80%{transform:translateX(1px)}100%{transform:none}}
+    .shake{animation:shake .22s linear}
+  </style>
+</head>
+
+<body>
+  <div class="flyLayer" id="flyLayer"></div>
+
+  <div class="app">
+    <div class="frame" id="appFrame">
+
+      <!-- LANDING -->
+      <section class="screen active" id="screen-landing" aria-label="Landing">
+        <div class="landing">
+          <button class="btn-start" id="btn-start">খেলা শুরু করি</button>
+        </div>
+      </section>
+
+      <!-- MENU -->
+      <section class="screen" id="screen-menu" aria-label="Menu">
+        <div class="topbar">
+          <div class="title" id="menuTitle">Hi, Player!</div>
+          <div class="navBtns">
+            <button class="iconBtn" id="btn-leaderboard" title="Leaderboard" aria-label="Leaderboard" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="13" width="4" height="9" rx="1"/><rect x="9" y="9" width="4" height="13" rx="1"/><rect x="16" y="4" width="4" height="18" rx="1"/>
+              </svg>
+            </button>
+            <button class="iconBtn" id="btn-fullscreen" title="Fullscreen" aria-label="Fullscreen">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M9 3H3v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 3h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 21H3v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 21h6v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="iconBtn" id="btn-settings" title="Settings" aria-label="Settings">
+              <!-- Sliders / tune icon — clear and universal -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="18" x2="20" y2="18"/>
+                <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+              </svg>
+            </button>
+            <button class="iconBtn" id="btn-home" title="Home" aria-label="Home">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="helloText">
+            <h2 id="menuHeadline">আজ তুমি কার জন্য শপিং করবে?</h2>
+            <p>একটি বিভাগ বেছে নাও — তারপর শপিং শুরু করো!</p>
+          </div>
+
+          <div class="menuGrid" id="category-grid"></div>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section class="screen" id="screen-game" aria-label="Game">
+        <div class="hud">
+          <div class="hudLeft">
+            <div class="pill">
+              <div class="k">Timer</div>
+              <div class="v" id="hud-timer">00:00</div>
+            </div>
+            <div class="pill">
+              <div class="k">Picked</div>
+              <div class="v"><span id="hud-packed">0</span> / <span id="hud-needed">0</span></div>
+            </div>
+            <div class="pill">
+              <div class="k">Lives</div>
+              <div class="v"><span id="hud-lives">0</span></div>
+            </div>
+          </div>
+          <div class="navBtns">
+            <button class="iconBtn" id="btn-game-fullscreen" title="Fullscreen" aria-label="Fullscreen">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M9 3H3v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 3h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 21H3v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 21h6v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <button class="iconBtn" id="btn-exit" title="Home" aria-label="Home">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="gameWrap">
+          <div class="trayHeader">
+            <p class="label">Item Tray</p>
+            <div class="lives" title="Lives remaining">
+              <span>Lives:</span>
+              <div class="hearts" id="hearts"></div>
+            </div>
+          </div>
+
+          <div class="tray" id="tray"></div>
+
+          <div>
+            <p class="bagTitle">আপনার ব্যাগ</p>
+            <div class="bagWrap">
+              <div class="bagInner">
+                <div class="bagGrid" id="bag"></div>
+                <div class="bagIllustration" id="bagTarget">
+                  <!-- stylized bag svg -->
+                  
+<svg class="bagSvg" viewBox="0 0 440 370" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <!-- Shadow -->
+  <ellipse cx="220" cy="364" rx="126" ry="6" fill="rgba(11,18,32,.07)"/>
+  <!-- Handles -->
+  <path d="M152 116 C152 66 180 40 220 40 C260 40 288 66 288 116"
+        fill="none" stroke="#CBD5E1" stroke-width="17" stroke-linecap="round"/>
+  <path d="M152 116 C152 66 180 40 220 40 C260 40 288 66 288 116"
+        fill="none" stroke="#EEF2F7" stroke-width="9" stroke-linecap="round"/>
+  <!-- Body -->
+  <path d="M80 126 H360 L341 318 Q334 354 294 354 H146 Q106 354 99 318 Z"
+        fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <!-- Top rim band -->
+  <rect x="80" y="126" width="280" height="24" fill="#F1F5F9"/>
+  <line x1="80" y1="150" x2="360" y2="150" stroke="#E2E8F0" stroke-width="1.5"/>
+  <!-- Centre crease -->
+  <line x1="220" y1="150" x2="218" y2="348" stroke="#ECF0F5" stroke-width="1.5"/>
+  <!-- Gusset folds -->
+  <line x1="132" y1="150" x2="118" y2="348" stroke="#ECF0F5" stroke-width="1.2"/>
+  <line x1="308" y1="150" x2="322" y2="348" stroke="#ECF0F5" stroke-width="1.2"/>
+  <!-- Bottom seam -->
+  <path d="M102 314 Q220 328 338 314" stroke="#E2E8F0" stroke-width="1.5" fill="none"/>
+  <!-- Eyelets -->
+  <circle cx="152" cy="128" r="7" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.5"/>
+  <circle cx="152" cy="128" r="2.8" fill="#94A3B8"/>
+  <circle cx="288" cy="128" r="7" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1.5"/>
+  <circle cx="288" cy="128" r="2.8" fill="#94A3B8"/>
+</svg>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="screen" id="screen-settings" aria-label="Settings">
+        <div class="topbar">
+          <div class="title">⚙️ Settings</div>
+          <div class="navBtns">
+            <button class="iconBtn" id="btn-settings-home" title="Home" aria-label="Home">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="settingsWrap">
+
+          <!-- 1. Firebase Sync -->
+          <div class="setCard">
+            <div class="setCardTitle">🔗 Firebase Sync</div>
+            <div class="setRow">
+              <div><div class="setLabel">Sync Status</div><span class="setHint">real-time cross-device sync</span></div>
+              <div class="syncPill"><span class="dot2" id="syncDot"></span><span id="syncText">Connecting…</span></div>
+            </div>
+            <p class="tiny" id="syncNote" style="margin-top:8px;">সংযোগ না হলে স্থানীয়ভাবে চলবে। Firebase Console-এ Anonymous Auth ও Realtime Database চালু আছে কিনা নিশ্চিত করুন।</p>
+          </div>
+
+          <!-- 2. Gameplay -->
+          <div class="setCard">
+            <div class="setCardTitle">🎮 Gameplay</div>
+            <div class="setRow">
+              <div><div class="setLabel">Time Limit</div><span class="setHint">seconds per round (5–120)</span></div>
+              <input class="setNum" id="set-time" type="number" min="5" max="120"/>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Items to Find</div><span class="setHint">correct picks per round (1–10)</span></div>
+              <input class="setNum" id="set-needed" type="number" min="1" max="10"/>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Mistakes Allowed</div><span class="setHint">wrong taps before game over (1–10)</span></div>
+              <input class="setNum" id="set-lives" type="number" min="1" max="10"/>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Tray Size</div><span class="setHint">total items shown in tray (8–30)</span></div>
+              <input class="setNum" id="set-traysize" type="number" min="8" max="30"/>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Difficulty Preset</div><span class="setHint">affects time, lives &amp; tray size together</span></div>
+              <select class="setNum" id="set-difficulty" style="width:84px;">
+                <option value="easy">Easy</option>
+                <option value="normal">Normal</option>
+                <option value="hard">Hard</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3. Display -->
+          <div class="setCard">
+            <div class="setCardTitle">🖥️ Display &amp; Features</div>
+            <div class="setRow">
+              <div><div class="setLabel">Pop-up Leaderboard</div><span class="setHint">show leaderboard button on menu screen</span></div>
+              <label class="toggle"><input type="checkbox" id="set-leaderboard"/><span class="toggleSlider"></span></label>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Show Item Hints</div><span class="setHint">show item names in brief screen</span></div>
+              <label class="toggle"><input type="checkbox" id="set-hints"/><span class="toggleSlider"></span></label>
+            </div>
+          </div>
+
+          <!-- 4. Statistics -->
+          <div class="setCard">
+            <div class="setCardTitle">📊 Game Statistics</div>
+            <div class="statGrid" id="statGrid"></div>
+            <div style="height:4px;"></div>
+            <div class="setCardSubtitle">Category Play Count</div>
+            <div class="catBarList" id="catBarList"></div>
+            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button class="btn ghost" id="btn-reset-stats" style="font-size:12px;padding:9px 12px;">🗑️ Reset Stats</button>
+              <button class="btn secondary" id="btn-dl-excel" style="font-size:12px;padding:9px 12px;">📥 Export Excel</button>
+            </div>
+          </div>
+
+          <!-- 5. Leaderboard (always visible here in settings) -->
+          <div class="setCard">
+            <div class="setCardTitle">🏆 Leaderboard <span style="font-weight:700;color:#9CA3AF;font-size:11px;">top wins via Firebase</span></div>
+            <div id="leaderboard" class="tiny" style="margin-top:4px;"></div>
+          </div>
+
+          <!-- 6. Security -->
+          <div class="setCard">
+            <div class="setCardTitle">🔐 Security</div>
+            <div class="setRow">
+              <div><div class="setLabel">Admin Keyword</div><span class="setHint">type in name field to open settings</span></div>
+            </div>
+            <input class="setTxt" id="set-admin-code" placeholder="admin"/>
+            <div style="height:10px;"></div>
+            <div>
+              <div class="setLabel" style="margin-bottom:6px;">Password</div>
+              <input class="setTxt" id="set-admin-pass" type="password" placeholder="123456"/>
+              <span class="setHint">master password is always 123456</span>
+            </div>
+          </div>
+
+          <!-- 7. Game Data JSON -->
+          <div class="setCard">
+            <div class="setCardTitle">📦 Game Data <span style="font-weight:700;color:#9CA3AF;font-size:11px;">JSON — categories &amp; items</span></div>
+            <textarea id="set-data" style="width:100%;min-height:200px;resize:vertical;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px;font-size:11px;font-family:monospace;line-height:1.4;outline:none;background:#FAFAFA;"></textarea>
+            <p class="tiny" style="margin-top:6px;">Firebase সক্রিয় থাকলে সেভ করলেই সব ডিভাইসে সমন্বিত হবে।</p>
+          </div>
+
+          <!-- Footer -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btn secondary" id="btn-exit-settings">✕ বন্ধ</button>
+            <button class="btn" id="btn-save-settings">💾 সেভ করো</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- MODALS (moved to body by JS anyway) -->
+      
+      <div class="backdrop" id="modal-admin" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <h3 class="mTitle">অ্যাডমিন কোড</h3>
+            <p class="mText">সেটিংস খুলতে কোড দিন।</p>
+            <div class="field">
+              <label lang="en">PASSCODE</label>
+              <input class="input" id="inp-admin-code" maxlength="24" placeholder="123456" />
+            </div>
+          </div>
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-admin-cancel">বন্ধ</button>
+            <button class="btn" id="btn-admin-next">এন্টার</button>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="backdrop" id="modal-name" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <h3 class="mTitle">আপনার নাম লিখুন</h3>
+
+            <div class="field">
+              <input class="input" id="inp-name" maxlength="24" placeholder=" " />
+            </div>
+          </div>
+
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-name-cancel">ফিরে যাই</button>
+            <button class="btn" id="btn-name-next">চলুন</button>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="backdrop" id="modal-pass" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <h3 class="mTitle">পাসওয়ার্ড দিন</h3>
+            <div class="field">
+              <input class="input" id="inp-pass" type="password" inputmode="numeric" maxlength="16" placeholder="••••••" />
+            </div>
+          </div>
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-pass-cancel">ফিরে যাই</button>
+            <button class="btn" id="btn-pass-next">চলুন</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="backdrop" id="modal-brief" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <!-- Hero header — JS sets --bClr1/2/--bAccent inline -->
+          <div class="briefHero" id="briefHero">
+            <div class="briefHeroBg" id="briefHeroBg"></div>
+            <div class="briefAvatarWrap"><div id="briefAvatar"></div></div>
+            <div class="briefTagline" id="briefTagline"></div>
+            <h3 class="briefHeroTitle" id="briefTitle">শপিং মিশন</h3>
+            <p class="briefDesc" id="briefText"></p>
+          </div>
+          <!-- Body -->
+          <div class="briefBody">
+            <div class="briefSectionLbl" id="briefItemsHdr">এগুলো খুঁজে বের করো</div>
+            <div class="briefRow" id="briefItems"></div>
+            <div class="briefTip" id="briefTip">
+              <div class="briefTipIcon">💡</div>
+              <div class="briefTipText" id="briefTipText"></div>
+            </div>
+          </div>
+          <!-- hidden legacy refs -->
+          <div id="briefStats" style="display:none"></div>
+          <p id="briefNote" style="display:none"></p>
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-brief-cancel">ফিরে যাই</button>
+            <button class="btn" id="btn-brief-start">শপিং শুরু করো! 🛒</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard pop-up -->
+      <div class="backdrop" id="modal-leaderboard" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <h3 class="mTitle">🏆 Leaderboard</h3>
+            <p class="mText" style="margin-bottom:14px;">সেরা জয়ের রেকর্ড</p>
+            <div id="lbList" style="max-height:340px;overflow-y:auto;"></div>
+          </div>
+          <div class="modalActions one">
+            <button class="btn ghost" id="btn-lb-close">বন্ধ করো</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="backdrop" id="modal-result" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <!-- Coloured header + confetti canvas -->
+          <div class="resHeader" id="resHeader">
+            <canvas id="confettiCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+            <div class="resEmoji" id="resEmoji">🎉</div>
+            <div class="resHTitle" id="resTitle">ফলাফল</div>
+            <div class="resHSub"  id="resMsg"></div>
+          </div>
+          <!-- Stats strip -->
+          <div class="resStat">
+            <div class="resStatTile">
+              <div class="resStatVal" id="resTime">—</div>
+              <div class="resStatLbl">Time</div>
+            </div>
+            <div class="resStatDiv"></div>
+            <div class="resStatTile">
+              <div class="resStatVal" id="resLivesUsed">—</div>
+              <div class="resStatLbl">Mistakes</div>
+            </div>
+            <div class="resStatDiv"></div>
+            <div class="resStatTile" id="resBadge">
+              <div class="resStatVal">—</div>
+              <div class="resStatLbl">Win Rate</div>
+            </div>
+          </div>
+          <!-- Buttons injected by finish() -->
+          <div class="resActions" id="resActions"></div>
+        </div>
+      </div>
+
+      <div class="backdrop" id="modal-ad" aria-hidden="true">
+        <div class="modal modal-ad-wide" role="dialog" aria-modal="true">
+          <div class="adImg">
+            <img src="assets/endbanner.jpg" alt="bKash Eid offer"
+              onerror="this.style.display='none';this.parentNode.style.cssText='background:linear-gradient(135deg,#FCE7F3,#db2777);padding:60px 30px;text-align:center;';this.insertAdjacentHTML('afterend','<div style='color:#fff;font-size:48px;margin-bottom:14px'>🌙</div><div style='color:#fff;font-size:22px;font-weight:900'>ঈদ মোবারক!</div><div style='color:rgba(255,255,255,.85);margin-top:8px;font-size:14px'>bKash-এর পক্ষ থেকে</div>')" />
+          </div>
+          <div class="modalActions one" style="padding:14px 18px 18px;">
+            <button class="btn" id="btn-ad-close">হোমে ফিরে যাই</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Polyfill: structuredClone (for Safari/older browsers)
+  if(typeof window.structuredClone !== 'function'){ window.structuredClone = (obj)=>JSON.parse(JSON.stringify(obj)); }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_03AtqFI-fGjRwmidx145jdkguqWiu8k",
+    authDomain: "eid-shopping-challenge.firebaseapp.com",
+    databaseURL: "https://eid-shopping-challenge-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "eid-shopping-challenge",
+    storageBucket: "eid-shopping-challenge.firebasestorage.app",
+    messagingSenderId: "308545483530",
+    appId: "1:308545483530:web:7065e2968e9f2727dd00f3",
+    measurementId: "G-8NJRJDC5B0"
+  };
+
+  const $ = (sel)=>document.querySelector(sel);
+  const el = (tag, attrs={}, children=[])=>{
+    const n=document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v])=>{ if(k==="class") n.className=v; else if(k==="html") n.innerHTML=v; else n.setAttribute(k,v); });
+    (children||[]).forEach(c=>n.appendChild(c));
+    return n;
+  };
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const shuffle=(arr)=>{ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  
+  function getCategorySvg(id, size=80){
+    // Returns a rich illustrated SVG for each category character
+    switch(id){
+      case "ma":
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Background circle -->
+          <circle cx="60" cy="60" r="58" fill="#FFF0F7" stroke="#F9A8D4" stroke-width="1.5"/>
+          <!-- Saree drape -->
+          <ellipse cx="60" cy="90" rx="32" ry="22" fill="#E879A0"/>
+          <path d="M34 80 Q50 95 80 88 Q90 82 86 70 Q80 60 60 62 Q40 64 34 80Z" fill="#EC4899"/>
+          <!-- Saree border detail -->
+          <path d="M34 80 Q50 92 82 85" stroke="#F472B6" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+          <!-- Body / blouse -->
+          <ellipse cx="60" cy="66" rx="16" ry="12" fill="#BE185D"/>
+          <!-- Neck -->
+          <ellipse cx="60" cy="47" rx="7" ry="9" fill="#FDBA74"/>
+          <!-- Face -->
+          <circle cx="60" cy="36" r="18" fill="#FDBA74"/>
+          <!-- Hair bun (jura) -->
+          <ellipse cx="60" cy="18" rx="14" ry="9" fill="#1C1917"/>
+          <circle cx="60" cy="16" r="5" fill="#1C1917"/>
+          <!-- Hair strands -->
+          <path d="M46 24 Q44 18 48 15" stroke="#1C1917" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M74 24 Q76 18 72 15" stroke="#1C1917" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- Eyes -->
+          <ellipse cx="54" cy="35" rx="3" ry="3.5" fill="white"/>
+          <ellipse cx="66" cy="35" rx="3" ry="3.5" fill="white"/>
+          <circle cx="54.5" cy="35.5" r="2" fill="#1C1917"/>
+          <circle cx="66.5" cy="35.5" r="2" fill="#1C1917"/>
+          <circle cx="55.5" cy="34.5" r="0.8" fill="white"/>
+          <circle cx="67.5" cy="34.5" r="0.8" fill="white"/>
+          <!-- Eyebrows -->
+          <path d="M50 31 Q54 29 58 31" stroke="#1C1917" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M62 31 Q66 29 70 31" stroke="#1C1917" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- Smile -->
+          <path d="M55 42 Q60 46 65 42" stroke="#D97706" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Bindi -->
+          <circle cx="60" cy="29" r="2" fill="#EC4899"/>
+          <!-- Necklace -->
+          <path d="M53 49 Q60 55 67 49" stroke="#F59E0B" stroke-width="2" fill="none"/>
+          <circle cx="60" cy="55" r="2" fill="#F59E0B"/>
+          <!-- Bangles on wrist area -->
+          <ellipse cx="40" cy="78" rx="5" ry="3" fill="none" stroke="#EC4899" stroke-width="2.5"/>
+          <ellipse cx="40" cy="82" rx="5" ry="3" fill="none" stroke="#F472B6" stroke-width="2"/>
+          <ellipse cx="80" cy="78" rx="5" ry="3" fill="none" stroke="#EC4899" stroke-width="2.5"/>
+          <ellipse cx="80" cy="82" rx="5" ry="3" fill="none" stroke="#F472B6" stroke-width="2"/>
+          <!-- Mehendi dots on hand -->
+          <circle cx="38" cy="87" r="1.5" fill="#EC4899"/>
+          <circle cx="42" cy="88" r="1.5" fill="#BE185D"/>
+        </svg>`;
+
+      case "baba":
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Background -->
+          <circle cx="60" cy="60" r="58" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.5"/>
+          <!-- Panjabi body -->
+          <path d="M32 70 Q32 105 60 108 Q88 105 88 70 L84 58 Q72 52 60 52 Q48 52 36 58Z" fill="#1D4ED8"/>
+          <!-- Panjabi collar V -->
+          <path d="M52 52 L60 68 L68 52" fill="#1E40AF" stroke="none"/>
+          <!-- Buttons -->
+          <circle cx="60" cy="60" r="2" fill="#93C5FD"/>
+          <circle cx="60" cy="68" r="2" fill="#93C5FD"/>
+          <circle cx="60" cy="76" r="2" fill="#93C5FD"/>
+          <!-- Arms / sleeves -->
+          <path d="M32 70 Q22 75 24 88 Q28 92 35 88 Q36 80 38 72" fill="#1D4ED8"/>
+          <path d="M88 70 Q98 75 96 88 Q92 92 85 88 Q84 80 82 72" fill="#1D4ED8"/>
+          <!-- Neck -->
+          <ellipse cx="60" cy="48" rx="8" ry="8" fill="#D97706"/>
+          <!-- Face -->
+          <circle cx="60" cy="34" r="20" fill="#D97706"/>
+          <!-- Hair -->
+          <path d="M40 28 Q42 14 60 12 Q78 14 80 28 Q74 20 60 19 Q46 20 40 28Z" fill="#1C1917"/>
+          <!-- Eyes -->
+          <ellipse cx="53" cy="33" rx="3.5" ry="3.5" fill="white"/>
+          <ellipse cx="67" cy="33" rx="3.5" ry="3.5" fill="white"/>
+          <circle cx="53.5" cy="33.5" r="2.2" fill="#1C1917"/>
+          <circle cx="67.5" cy="33.5" r="2.2" fill="#1C1917"/>
+          <circle cx="54.5" cy="32.5" r="0.9" fill="white"/>
+          <circle cx="68.5" cy="32.5" r="0.9" fill="white"/>
+          <!-- Eyebrows -->
+          <path d="M49 28 Q53 26 57 28" stroke="#1C1917" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M63 28 Q67 26 71 28" stroke="#1C1917" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Smile -->
+          <path d="M54 41 Q60 46 66 41" stroke="#B45309" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Moustache -->
+          <path d="M54 39 Q60 42 66 39" stroke="#1C1917" stroke-width="2" fill="none"/>
+          <!-- Topi (cap) -->
+          <ellipse cx="60" cy="16" rx="14" ry="7" fill="#1D4ED8"/>
+          <path d="M46 19 Q60 12 74 19" fill="#1D4ED8"/>
+          <!-- Watch on wrist -->
+          <rect x="22" y="86" width="8" height="6" rx="2" fill="#6B7280"/>
+          <rect x="23.5" y="87.5" width="5" height="3" rx="1" fill="#E5E7EB"/>
+          <!-- Sandal feet area -->
+          <ellipse cx="47" cy="107" rx="9" ry="4" fill="#92400E"/>
+          <ellipse cx="73" cy="107" rx="9" ry="4" fill="#92400E"/>
+          <path d="M40 106 Q47 103 54 106" stroke="#78350F" stroke-width="1.5" fill="none"/>
+          <path d="M66 106 Q73 103 80 106" stroke="#78350F" stroke-width="1.5" fill="none"/>
+        </svg>`;
+
+      case "bhaiya":
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Background -->
+          <circle cx="60" cy="60" r="58" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="1.5"/>
+          <!-- Panjabi / shirt -->
+          <path d="M30 72 Q30 106 60 109 Q90 106 90 72 L85 60 Q72 53 60 53 Q48 53 35 60Z" fill="#166534"/>
+          <!-- Collar -->
+          <path d="M52 53 L60 65 L68 53" fill="#14532D"/>
+          <!-- Buttons -->
+          <circle cx="60" cy="61" r="1.8" fill="#86EFAC"/>
+          <circle cx="60" cy="69" r="1.8" fill="#86EFAC"/>
+          <circle cx="60" cy="77" r="1.8" fill="#86EFAC"/>
+          <!-- Sleeves -->
+          <path d="M30 72 Q20 77 22 90 Q26 94 33 90 Q35 82 38 73" fill="#166534"/>
+          <path d="M90 72 Q100 77 98 90 Q94 94 87 90 Q85 82 82 73" fill="#166534"/>
+          <!-- Neck -->
+          <ellipse cx="60" cy="48" rx="8" ry="8" fill="#C2856A"/>
+          <!-- Face -->
+          <circle cx="60" cy="33" r="20" fill="#C2856A"/>
+          <!-- Hair - stylish side part -->
+          <path d="M40 26 Q42 13 60 11 Q78 13 80 26 L76 20 Q68 16 60 16 Q50 17 44 24Z" fill="#1C1917"/>
+          <path d="M40 26 Q44 20 52 18" stroke="#1C1917" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <!-- Eyes -->
+          <ellipse cx="53" cy="33" rx="3.5" ry="3.5" fill="white"/>
+          <ellipse cx="67" cy="33" rx="3.5" ry="3.5" fill="white"/>
+          <circle cx="53.5" cy="33.5" r="2.2" fill="#1C1917"/>
+          <circle cx="67.5" cy="33.5" r="2.2" fill="#1C1917"/>
+          <circle cx="54.5" cy="32.5" r="0.9" fill="white"/>
+          <circle cx="68.5" cy="32.5" r="0.9" fill="white"/>
+          <!-- Eyebrows - sharp -->
+          <path d="M48 27 Q53 25 57 27" stroke="#1C1917" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M63 27 Q67 25 72 27" stroke="#1C1917" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <!-- Cool smile -->
+          <path d="M54 42 Q60 47 66 42" stroke="#A0522D" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Sunglasses pushed up on head as accessory -->
+          <rect x="48" y="10" width="24" height="6" rx="3" fill="#1C1917" opacity="0.7"/>
+          <path d="M48 13 Q60 11 72 13" stroke="#4B5563" stroke-width="1" fill="none"/>
+          <!-- Sneakers -->
+          <path d="M40 106 Q46 100 56 102 L58 108 L38 108Z" fill="#F97316"/>
+          <path d="M80 106 Q74 100 64 102 L62 108 L82 108Z" fill="#F97316"/>
+          <path d="M40 105 Q48 102 56 103" stroke="white" stroke-width="1.5" fill="none"/>
+          <path d="M80 105 Q72 102 64 103" stroke="white" stroke-width="1.5" fill="none"/>
+          <!-- Watch -->
+          <rect x="84" y="88" width="9" height="6" rx="2" fill="#374151"/>
+          <rect x="85.5" y="89.5" width="6" height="3" rx="1" fill="#E5E7EB"/>
+        </svg>`;
+
+      case "apu":
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Background -->
+          <circle cx="60" cy="60" r="58" fill="#FDF4FF" stroke="#E9D5FF" stroke-width="1.5"/>
+          <!-- Kurti / 3-piece -->
+          <path d="M33 72 Q33 106 60 109 Q87 106 87 72 L82 60 Q70 53 60 53 Q50 53 38 60Z" fill="#7C3AED"/>
+          <!-- Kurti decorative border -->
+          <path d="M38 62 Q60 56 82 62" stroke="#A78BFA" stroke-width="2" fill="none"/>
+          <path d="M36 70 Q60 64 84 70" stroke="#C4B5FD" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/>
+          <!-- Collar / neckline -->
+          <path d="M52 53 Q60 60 68 53" fill="#6D28D9" stroke="none"/>
+          <!-- Dupatta / orna over shoulder -->
+          <path d="M33 72 Q20 65 18 80 Q20 92 34 88" fill="#A855F7" opacity="0.7"/>
+          <path d="M33 72 Q18 70 16 82" stroke="#C084FC" stroke-width="2" fill="none"/>
+          <!-- Sleeves / arms -->
+          <path d="M33 72 Q24 78 26 90 Q30 95 37 90 Q38 82 40 73" fill="#7C3AED"/>
+          <path d="M87 72 Q96 78 94 90 Q90 95 83 90 Q82 82 80 73" fill="#7C3AED"/>
+          <!-- Neck -->
+          <ellipse cx="60" cy="48" rx="7" ry="9" fill="#FDBA74"/>
+          <!-- Face -->
+          <circle cx="60" cy="34" r="19" fill="#FDBA74"/>
+          <!-- Long hair -->
+          <path d="M41 30 Q38 18 42 12 Q50 6 60 5 Q70 6 78 12 Q82 18 79 30" fill="#1C1917"/>
+          <path d="M41 30 Q36 45 37 60 Q38 68 40 72" fill="#1C1917" opacity="0.9"/>
+          <path d="M79 30 Q84 45 83 60 Q82 68 80 72" fill="#1C1917" opacity="0.9"/>
+          <!-- Eyes with eyelashes -->
+          <ellipse cx="53" cy="34" rx="3.5" ry="3.5" fill="white"/>
+          <ellipse cx="67" cy="34" rx="3.5" ry="3.5" fill="white"/>
+          <circle cx="53.5" cy="34.5" r="2.2" fill="#1C1917"/>
+          <circle cx="67.5" cy="34.5" r="2.2" fill="#1C1917"/>
+          <circle cx="54.5" cy="33.5" r="0.9" fill="white"/>
+          <circle cx="68.5" cy="33.5" r="0.9" fill="white"/>
+          <!-- Eyelashes -->
+          <line x1="50" y1="31" x2="49" y2="29" stroke="#1C1917" stroke-width="1.2"/>
+          <line x1="53" y1="30" x2="53" y2="28" stroke="#1C1917" stroke-width="1.2"/>
+          <line x1="56" y1="31" x2="57" y2="29" stroke="#1C1917" stroke-width="1.2"/>
+          <line x1="64" y1="31" x2="63" y2="29" stroke="#1C1917" stroke-width="1.2"/>
+          <line x1="67" y1="30" x2="67" y2="28" stroke="#1C1917" stroke-width="1.2"/>
+          <line x1="70" y1="31" x2="71" y2="29" stroke="#1C1917" stroke-width="1.2"/>
+          <!-- Eyebrows - arched -->
+          <path d="M49 29 Q53 26 57 29" stroke="#1C1917" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M63 29 Q67 26 71 29" stroke="#1C1917" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Smile -->
+          <path d="M55 42 Q60 47 65 42" stroke="#D97706" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Lipstick -->
+          <path d="M55 42 Q60 45 65 42" fill="#EC4899" stroke="none" opacity="0.5"/>
+          <!-- Bindi -->
+          <circle cx="60" cy="28" r="2.2" fill="#EC4899"/>
+          <!-- Necklace -->
+          <path d="M53 50 Q60 56 67 50" stroke="#F59E0B" stroke-width="2.2" fill="none"/>
+          <circle cx="60" cy="56" r="2.5" fill="#F59E0B"/>
+          <!-- Bangles -->
+          <ellipse cx="84" cy="80" rx="4.5" ry="3" fill="none" stroke="#A855F7" stroke-width="2.2"/>
+          <ellipse cx="84" cy="84" rx="4.5" ry="3" fill="none" stroke="#EC4899" stroke-width="1.8"/>
+          <ellipse cx="84" cy="88" rx="4.5" ry="3" fill="none" stroke="#F59E0B" stroke-width="1.8"/>
+          <!-- Mehendi on hand -->
+          <path d="M80 88 Q83 92 86 90" stroke="#D97706" stroke-width="1.5" fill="none"/>
+        </svg>`;
+
+      case "own":
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="60" cy="60" r="58" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
+          <!-- shopping bag body -->
+          <rect x="30" y="50" width="60" height="52" rx="10" fill="#F59E0B"/>
+          <rect x="30" y="50" width="60" height="52" rx="10" fill="url(#bagGrad)" opacity=".5"/>
+          <defs><linearGradient id="bagGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+          <!-- bag handles -->
+          <path d="M44 50 Q44 30 60 30 Q76 30 76 50" fill="none" stroke="#D97706" stroke-width="5" stroke-linecap="round"/>
+          <!-- bag top rim -->
+          <rect x="30" y="50" width="60" height="10" rx="5" fill="#D97706"/>
+          <!-- star decoration -->
+          <path d="M60 62 l3 6 h7 l-5.5 4.5 2 7L60 76l-6.5 3.5 2-7L50 68h7z" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+          <!-- sparkles -->
+          <circle cx="38" cy="68" r="3" fill="#FDE68A"/>
+          <circle cx="82" cy="72" r="2.5" fill="#FDE68A"/>
+          <path d="M38 58 v4M36 60 h4" stroke="#FEF3C7" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M82 60 v4M80 62 h4" stroke="#FEF3C7" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- face -->
+          <circle cx="60" cy="34" r="16" fill="#FDBA74"/>
+          <circle cx="55" cy="32" r="2.5" fill="#1C1917"/>
+          <circle cx="65" cy="32" r="2.5" fill="#1C1917"/>
+          <circle cx="55.8" cy="31.2" r="1" fill="white"/>
+          <circle cx="65.8" cy="31.2" r="1" fill="white"/>
+          <path d="M55 39 Q60 43 65 39" stroke="#D97706" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- hair -->
+          <path d="M44 26 Q60 16 76 26 Q78 20 60 17 Q42 20 44 26Z" fill="#1C1917"/>
+          <!-- sunglasses (trendy!) -->
+          <rect x="49" y="28" width="9" height="6" rx="3" fill="#1D4ED8" opacity=".85"/>
+          <rect x="62" y="28" width="9" height="6" rx="3" fill="#1D4ED8" opacity=".85"/>
+          <path d="M58 31 h4" stroke="#1D4ED8" stroke-width="1.5"/>
+          <path d="M48 31 Q46 29 44 31" stroke="#1C1917" stroke-width="1.2" fill="none"/>
+          <path d="M72 31 Q74 29 76 31" stroke="#1C1917" stroke-width="1.2" fill="none"/>
+        </svg>`;
+
+      default:
+        return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="60" cy="60" r="58" fill="#F3F4F6"/>
+          <circle cx="60" cy="48" r="16" fill="#9CA3AF"/>
+          <path d="M28 95 Q28 72 60 72 Q92 72 92 95" fill="#9CA3AF"/>
+        </svg>`;
+    }
+  }
+
+  function getItemSvg(id, size=28){
+    const s = size;
+    const svgs = {
+      perfume: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="12" y="16" width="16" height="20" rx="5" fill="#FCE7F3" stroke="#EC4899" stroke-width="1.5"/>
+        <rect x="12" y="16" width="16" height="7" rx="5" fill="#EC4899"/>
+        <rect x="16" y="9" width="8" height="9" rx="3" fill="#FBCFE8" stroke="#EC4899" stroke-width="1.2"/>
+        <rect x="18" y="6" width="4" height="5" rx="1.5" fill="#EC4899"/>
+        <circle cx="20" cy="24" r="3" fill="#F9A8D4" opacity=".7"/>
+        <path d="M16 30 Q20 27 24 30" stroke="#F472B6" stroke-width="1.2" fill="none"/>
+        <!-- spray lines -->
+        <path d="M10 8 Q8 6 6 7" stroke="#F9A8D4" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M10 10 Q7 10 6 12" stroke="#F9A8D4" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>`,
+
+      churi: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="12" fill="none" stroke="#EC4899" stroke-width="4"/>
+        <circle cx="20" cy="20" r="12" fill="none" stroke="#F9A8D4" stroke-width="2" stroke-dasharray="5 4" stroke-dashoffset="2"/>
+        <circle cx="20" cy="8" r="2.5" fill="#EC4899"/>
+        <circle cx="20" cy="8" r="1" fill="white"/>
+        <!-- second bangle -->
+        <circle cx="20" cy="20" r="9" fill="none" stroke="#A855F7" stroke-width="2.5" stroke-dasharray="3 3"/>
+      </svg>`,
+
+      scarf: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 10 Q20 6 32 10 L30 22 Q22 28 18 36 Q14 28 12 22Z" fill="#E0E7FF" stroke="#6366F1" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M8 10 Q20 14 32 10" stroke="#A5B4FC" stroke-width="1.5" fill="none"/>
+        <path d="M14 16 Q20 18 26 16" stroke="#6366F1" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+        <path d="M13 20 Q18 22 22 20" stroke="#6366F1" stroke-width="1" fill="none" stroke-dasharray="3 2"/>
+        <circle cx="18" cy="34" r="2" fill="#6366F1"/>
+        <circle cx="22" cy="30" r="1.5" fill="#A5B4FC"/>
+      </svg>`,
+
+      lipstick: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="15" y="20" width="10" height="14" rx="2" fill="#9CA3AF"/>
+        <rect x="15" y="20" width="10" height="4" fill="#6B7280"/>
+        <path d="M14 10 L16 20 H24 L26 10 Q22 6 20 6 Q18 6 14 10Z" fill="#EC4899"/>
+        <path d="M14 10 Q20 12 26 10" stroke="#F472B6" stroke-width="1.2" fill="none"/>
+        <ellipse cx="20" cy="9" rx="4" ry="2" fill="#F9A8D4" opacity=".6"/>
+        <rect x="16" y="29" width="8" height="1.5" rx=".75" fill="#9CA3AF"/>
+      </svg>`,
+
+      sandals: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 28 Q10 20 20 19 Q30 20 34 28 L34 32 Q34 35 31 35 L9 35 Q6 35 6 32Z" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+        <path d="M13 24 Q18 21 24 24" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20 19 L20 14" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+        <path d="M16 22 L16 15 Q20 12 24 15 L24 22" stroke="#F59E0B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="20" cy="33" rx="9" ry="1.5" fill="#D97706" opacity=".4"/>
+      </svg>`,
+
+      panjabi: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 8 H30 L34 14 L34 38 H6 L6 14Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Collar / V neck -->
+        <path d="M16 8 L20 17 L24 8" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.2"/>
+        <!-- Center placket line -->
+        <line x1="20" y1="17" x2="20" y2="38" stroke="#93C5FD" stroke-width="1.2"/>
+        <!-- Buttons -->
+        <circle cx="20" cy="20" r="1.2" fill="#2563EB"/>
+        <circle cx="20" cy="25" r="1.2" fill="#2563EB"/>
+        <circle cx="20" cy="30" r="1.2" fill="#2563EB"/>
+        <!-- Embroidery at collar -->
+        <path d="M16 10 Q20 13 24 10" stroke="#60A5FA" stroke-width="1" fill="none" stroke-dasharray="2 1.5"/>
+        <!-- Side seams -->
+        <line x1="10" y1="14" x2="6" y2="38" stroke="#93C5FD" stroke-width="1" opacity=".5"/>
+        <line x1="30" y1="14" x2="34" y2="38" stroke="#93C5FD" stroke-width="1" opacity=".5"/>
+      </svg>`,
+
+      wallet: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="13" width="30" height="20" rx="5" fill="#F0FDF4" stroke="#16A34A" stroke-width="1.5"/>
+        <path d="M5 19 H35" stroke="#16A34A" stroke-width="1.5"/>
+        <!-- Card slot -->
+        <rect x="7" y="21" width="12" height="8" rx="2" fill="#DCFCE7" stroke="#86EFAC" stroke-width="1"/>
+        <!-- Coin pocket right side -->
+        <rect x="26" y="20" width="8" height="11" rx="3" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.2"/>
+        <circle cx="30" cy="26" r="2.5" fill="#16A34A" opacity=".6"/>
+        <!-- Card lines -->
+        <line x1="9" y1="25" x2="17" y2="25" stroke="#86EFAC" stroke-width="1"/>
+        <line x1="9" y1="27" x2="15" y2="27" stroke="#86EFAC" stroke-width="1"/>
+        <!-- Clasp -->
+        <path d="M5 14 Q5 10 10 10 H30 Q35 10 35 14" stroke="#16A34A" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      watch: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Strap -->
+        <rect x="15" y="4" width="10" height="8" rx="2" fill="#374151"/>
+        <rect x="15" y="28" width="10" height="8" rx="2" fill="#374151"/>
+        <!-- Watch body -->
+        <circle cx="20" cy="20" r="12" fill="white" stroke="#1F2937" stroke-width="2"/>
+        <circle cx="20" cy="20" r="10" fill="#F9FAFB"/>
+        <!-- Dial markers -->
+        <line x1="20" y1="11" x2="20" y2="13" stroke="#6B7280" stroke-width="1.5"/>
+        <line x1="20" y1="27" x2="20" y2="29" stroke="#6B7280" stroke-width="1.5"/>
+        <line x1="11" y1="20" x2="13" y2="20" stroke="#6B7280" stroke-width="1.5"/>
+        <line x1="27" y1="20" x2="29" y2="20" stroke="#6B7280" stroke-width="1.5"/>
+        <!-- Hands -->
+        <line x1="20" y1="20" x2="20" y2="13" stroke="#1F2937" stroke-width="2" stroke-linecap="round"/>
+        <line x1="20" y1="20" x2="25" y2="23" stroke="#EF4444" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="1.5" fill="#1F2937"/>
+        <!-- Crown -->
+        <rect x="31" y="18" width="3" height="4" rx="1" fill="#374151"/>
+      </svg>`,
+
+      belt: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="16" width="32" height="8" rx="3" fill="#451A03" stroke="#92400E" stroke-width="1.2"/>
+        <!-- Buckle -->
+        <rect x="14" y="13" width="12" height="14" rx="2" fill="#D97706" stroke="#92400E" stroke-width="1.2"/>
+        <rect x="16" y="15" width="8" height="10" rx="1.5" fill="#F59E0B"/>
+        <line x1="20" y1="15" x2="20" y2="25" stroke="#D97706" stroke-width="1.5"/>
+        <!-- Belt holes -->
+        <circle cx="8" cy="20" r="1.2" fill="#92400E"/>
+        <circle cx="11" cy="20" r="1.2" fill="#92400E"/>
+        <!-- Texture lines on belt -->
+        <line x1="28" y1="17" x2="28" y2="23" stroke="#92400E" stroke-width=".8" opacity=".5"/>
+        <line x1="31" y1="17" x2="31" y2="23" stroke="#92400E" stroke-width=".8" opacity=".5"/>
+      </svg>`,
+
+      cap: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Bill / brim -->
+        <path d="M8 24 Q10 30 34 27 L32 22 Z" fill="#1E40AF" stroke="#1D4ED8" stroke-width="1"/>
+        <!-- Cap dome -->
+        <path d="M8 24 Q6 12 20 8 Q34 12 32 24Z" fill="#2563EB"/>
+        <!-- Panel seam -->
+        <path d="M20 8 L20 24" stroke="#1E40AF" stroke-width="1" fill="none"/>
+        <path d="M14 10 L10 24" stroke="#1E40AF" stroke-width=".8" fill="none"/>
+        <path d="M26 10 L30 24" stroke="#1E40AF" stroke-width=".8" fill="none"/>
+        <!-- Button on top -->
+        <circle cx="20" cy="9" r="2" fill="#1E40AF" stroke="#93C5FD" stroke-width="1"/>
+        <!-- Sweatband -->
+        <path d="M8 24 Q20 26 32 24" stroke="#1D4ED8" stroke-width="1.5" fill="none"/>
+        <!-- Logo area -->
+        <circle cx="20" cy="17" r="3" fill="#1E40AF" stroke="#93C5FD" stroke-width=".8"/>
+      </svg>`,
+
+      tshirt: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 10 L12 6 Q16 12 20 12 Q24 12 28 6 L35 10 L32 20 L28 18 L28 36 L12 36 L12 18 L8 20Z" fill="#D1FAE5" stroke="#10B981" stroke-width="1.5" stroke-linejoin="round"/>
+        <!-- Collar -->
+        <path d="M16 6 Q20 10 24 6" stroke="#10B981" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- Pocket -->
+        <rect x="21" y="18" width="5" height="6" rx="1" fill="none" stroke="#10B981" stroke-width="1"/>
+        <!-- Stitch lines -->
+        <line x1="12" y1="18" x2="28" y2="18" stroke="#6EE7B7" stroke-width=".8"/>
+      </svg>`,
+
+      jeans: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 4 H32 L30 22 Q28 30 20 32 Q12 30 10 22Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/>
+        <path d="M10 22 L8 40 L18 40 L20 30" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+        <path d="M30 22 L32 40 L22 40 L20 30" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5"/>
+        <!-- Center seam -->
+        <line x1="20" y1="4" x2="20" y2="32" stroke="#93C5FD" stroke-width="1"/>
+        <!-- Waistband -->
+        <rect x="8" y="4" width="24" height="5" rx="1" fill="#2563EB"/>
+        <!-- Belt loops -->
+        <rect x="12" y="3" width="3" height="7" rx="1" fill="#1D4ED8"/>
+        <rect x="25" y="3" width="3" height="7" rx="1" fill="#1D4ED8"/>
+        <!-- Pocket stitching -->
+        <path d="M11 10 Q14 14 11 18" stroke="#93C5FD" stroke-width="1" fill="none"/>
+        <path d="M29 10 Q26 14 29 18" stroke="#93C5FD" stroke-width="1" fill="none"/>
+      </svg>`,
+
+      sneakers: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Sole -->
+        <path d="M4 30 Q4 36 10 36 L34 36 Q38 36 38 32 L38 30Z" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1"/>
+        <!-- Upper -->
+        <path d="M4 30 Q6 20 14 18 L22 17 L32 20 Q38 24 38 30Z" fill="#F97316"/>
+        <!-- Swoosh / stripe -->
+        <path d="M12 24 Q22 20 34 24" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+        <!-- Toe box -->
+        <path d="M4 30 Q4 24 10 22 L14 21 Q8 26 6 30Z" fill="#EA580C"/>
+        <!-- Heel tab -->
+        <path d="M36 26 L38 22 L36 20 L34 22 Q36 24 36 26Z" fill="#EA580C"/>
+        <!-- Laces -->
+        <path d="M16 22 L18 26 M20 21 L22 25 M24 21 L26 25" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="16" y1="24" x2="26" y2="23" stroke="white" stroke-width="1" opacity=".6"/>
+      </svg>`,
+
+      sunglasses: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Frame -->
+        <rect x="3" y="14" width="14" height="11" rx="5" fill="#1E293B" stroke="#334155" stroke-width="1.2"/>
+        <rect x="23" y="14" width="14" height="11" rx="5" fill="#1E293B" stroke="#334155" stroke-width="1.2"/>
+        <!-- Bridge -->
+        <path d="M17 19 Q20 17 23 19" stroke="#475569" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Temples / arms -->
+        <line x1="3" y1="19" x2="0" y2="18" stroke="#334155" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="37" y1="19" x2="40" y2="18" stroke="#334155" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Lens tint -->
+        <rect x="4" y="15" width="12" height="9" rx="4" fill="#3B82F6" opacity=".35"/>
+        <rect x="24" y="15" width="12" height="9" rx="4" fill="#3B82F6" opacity=".35"/>
+        <!-- Shine -->
+        <path d="M5 16 Q8 15 10 17" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+        <path d="M25 16 Q28 15 30 17" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+      </svg>`,
+
+      sari: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Drape body -->
+        <path d="M10 4 Q22 2 30 4 L28 36 Q22 39 16 36Z" fill="#FCE7F3" stroke="#EC4899" stroke-width="1.5"/>
+        <!-- Pleats on left -->
+        <path d="M10 4 Q12 12 10 36" stroke="#F472B6" stroke-width="1" fill="none"/>
+        <path d="M12 4 Q14 12 12 36" stroke="#F472B6" stroke-width=".8" fill="none" opacity=".5"/>
+        <!-- Border at bottom -->
+        <path d="M10 30 Q20 34 30 30" stroke="#EC4899" stroke-width="2" fill="none"/>
+        <path d="M10 33 Q20 37 30 33" stroke="#F9A8D4" stroke-width="1.5" fill="none"/>
+        <!-- Embroidery / zari motifs -->
+        <circle cx="20" cy="12" r="1.5" fill="#F59E0B"/>
+        <circle cx="17" cy="17" r="1.2" fill="#F59E0B"/>
+        <circle cx="23" cy="17" r="1.2" fill="#F59E0B"/>
+        <circle cx="20" cy="22" r="1.5" fill="#F59E0B"/>
+        <!-- Pallu drape at top right -->
+        <path d="M26 4 Q32 2 36 8 Q34 18 30 18" fill="#F9A8D4" stroke="#EC4899" stroke-width="1"/>
+      </svg>`,
+
+      earrings: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Left earring -->
+        <circle cx="12" cy="10" r="3" fill="#F59E0B" stroke="#D97706" stroke-width="1"/>
+        <circle cx="12" cy="10" r="1.5" fill="white" opacity=".7"/>
+        <path d="M12 13 L12 22" stroke="#D97706" stroke-width="1.5"/>
+        <circle cx="12" cy="25" r="4" fill="#EC4899" stroke="#DB2777" stroke-width="1"/>
+        <circle cx="12" cy="25" r="2" fill="white" opacity=".5"/>
+        <!-- Right earring -->
+        <circle cx="28" cy="10" r="3" fill="#F59E0B" stroke="#D97706" stroke-width="1"/>
+        <circle cx="28" cy="10" r="1.5" fill="white" opacity=".7"/>
+        <path d="M28 13 L28 22" stroke="#D97706" stroke-width="1.5"/>
+        <circle cx="28" cy="25" r="4" fill="#A855F7" stroke="#9333EA" stroke-width="1"/>
+        <circle cx="28" cy="25" r="2" fill="white" opacity=".5"/>
+        <!-- Drop danglers -->
+        <path d="M12 29 L12 35 Q10 37 12 38 Q14 37 12 35" stroke="#EC4899" stroke-width="1.5" fill="none"/>
+        <path d="M28 29 L28 35 Q26 37 28 38 Q30 37 28 35" stroke="#A855F7" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      handbag: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Bag body -->
+        <rect x="6" y="16" width="28" height="22" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5"/>
+        <!-- Handle -->
+        <path d="M14 16 L14 10 Q14 6 20 6 Q26 6 26 10 L26 16" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Flap / clasp -->
+        <rect x="6" y="16" width="28" height="8" rx="6" fill="#FCD34D" stroke="#D97706" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="3" fill="#D97706"/>
+        <circle cx="20" cy="20" r="1.5" fill="#FCD34D"/>
+        <!-- Pocket stitching -->
+        <rect x="10" y="28" width="20" height="7" rx="3" fill="none" stroke="#F59E0B" stroke-width="1" stroke-dasharray="2 2"/>
+        <!-- Rivet detail -->
+        <circle cx="8" cy="16" r="1.5" fill="#D97706"/>
+        <circle cx="32" cy="16" r="1.5" fill="#D97706"/>
+      </svg>`,
+
+      chocolate: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Wrapper -->
+        <rect x="6" y="8" width="28" height="24" rx="4" fill="#92400E" stroke="#78350F" stroke-width="1.5"/>
+        <!-- Foil top open -->
+        <path d="M6 8 Q10 4 14 8" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1"/>
+        <path d="M14 8 Q20 4 26 8" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1"/>
+        <path d="M26 8 Q30 4 34 8" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1"/>
+        <!-- Segments -->
+        <line x1="6" y1="18" x2="34" y2="18" stroke="#78350F" stroke-width="2"/>
+        <line x1="6" y1="25" x2="34" y2="25" stroke="#78350F" stroke-width="2"/>
+        <line x1="16" y1="8" x2="16" y2="32" stroke="#78350F" stroke-width="2"/>
+        <line x1="24" y1="8" x2="24" y2="32" stroke="#78350F" stroke-width="2"/>
+        <!-- Highlight on chocolate -->
+        <rect x="8" y="10" width="6" height="6" rx="1.5" fill="#A16207" opacity=".5"/>
+        <rect x="18" y="10" width="4" height="6" rx="1" fill="#A16207" opacity=".4"/>
+      </svg>`,
+
+      giftbox: `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Box -->
+        <rect x="5" y="18" width="30" height="20" rx="3" fill="#FEE2E2" stroke="#EF4444" stroke-width="1.5"/>
+        <!-- Lid -->
+        <rect x="4" y="14" width="32" height="7" rx="3" fill="#EF4444"/>
+        <!-- Ribbon vertical -->
+        <rect x="18" y="4" width="4" height="34" rx="1" fill="#FCA5A5"/>
+        <!-- Ribbon horizontal -->
+        <rect x="4" y="17" width="32" height="4" rx="1" fill="#FCA5A5"/>
+        <!-- Bow left -->
+        <path d="M20 14 Q12 8 14 4 Q18 2 20 10" fill="#EF4444" stroke="#DC2626" stroke-width=".8"/>
+        <!-- Bow right -->
+        <path d="M20 14 Q28 8 26 4 Q22 2 20 10" fill="#EF4444" stroke="#DC2626" stroke-width=".8"/>
+        <!-- Bow centre -->
+        <circle cx="20" cy="12" r="2.5" fill="#DC2626" stroke="#FCA5A5" stroke-width="1"/>
+        <!-- Star on gift -->
+        <circle cx="15" cy="26" r="3" fill="#FCA5A5" opacity=".5"/>
+        <circle cx="26" cy="30" r="2" fill="#FCA5A5" opacity=".4"/>
+      </svg>`,
+    };
+    return svgs[id] || `<svg width="${s}" height="${s}" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="32" height="32" rx="8" fill="#F3F4F6" stroke="#E5E7EB" stroke-width="1.5"/>
+      <text x="20" y="25" text-anchor="middle" font-size="16" fill="#9CA3AF">?</text>
+    </svg>`;
+  }
+
+  const now=()=>performance.now();
+
+  // v11: clear stale localStorage so password defaults are clean
+  (function(){ const VER="eid_v15"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
+  const KEYS = { settings:"eid_shop_settings_prod", stats:"eid_shop_stats_prod", data:"eid_shop_data_prod" };
+  const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal" };
+  const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{} };
+
+  // Sprite positions in the sheet (8x4 tiles, 128px each)
+  const SPR_INDEX = {
+    perfume:0, churi:1, scarf:2, lipstick:3, sandals:4, panjabi:5, wallet:6, watch:7,
+    tshirt:8, jeans:9, sneakers:10, sunglasses:11, sari:12, earrings:13, handbag:14, cap:15,
+    belt:16, chocolate:17, giftbox:18
+  };
+
+  const HERO_INDEX = { ma:0, baba:1, bhaiya:2, apu:3 };
+
+  const defaultData = {
+    landingSub: "ঈদের সেরা শপিং চ্যালেঞ্জ!",
+    categories: [
+      { id:"ma",     title:"আম্মু",   hero:"ma",
+        tagline:"আম্মুর ঈদের কেনাকাটা",
+        description:"আম্মুকে এবার ঈদে সত্যিই বিশেষ অনুভব করাও — তাঁর পছন্দের প্রসাধনী, গয়না আর পোশাক বেছে দাও ভালোবাসা দিয়ে।",
+        hint:"পারফিউম, চুড়ি, ওড়না — মায়ের পছন্দের জিনিসগুলো চেনো?",
+        correct:["perfume","churi","scarf","lipstick","handbag"] },
+      { id:"baba",   title:"বাবা",    hero:"baba",
+        tagline:"বাবার ঈদের কেনাকাটা",
+        description:"বাবা সকালে হাঁটতে পছন্দ করেন, ঈদে স্মার্ট দেখাতে চান — পাঞ্জাবি, ঘড়ি আর ওয়ালেটে তাঁর ব্যক্তিত্ব ফুটে ওঠে।",
+        hint:"পাঞ্জাবি থেকে স্যান্ডেল — বাবার ক্লাসিক ঈদ স্টাইল।",
+        correct:["panjabi","wallet","watch","belt","sandals"] },
+      { id:"bhaiya", title:"ভাইয়া",  hero:"bhaiya",
+        tagline:"ভাইয়ার ঈদের কেনাকাটা",
+        description:"ভাইয়া বন্ধুদের সঙ্গে আড্ডা দেবে, ঘুরবে — কমফোর্ট আর ট্রেন্ডি স্টাইল দুটোই চাই।",
+        hint:"ক্যাজুয়াল ও স্পোর্টি — টি-শার্ট, জিন্স, স্নিকার্স খোঁজো।",
+        correct:["tshirt","jeans","sneakers","sunglasses","cap"] },
+      { id:"apu",    title:"আপু",     hero:"apu",
+        tagline:"আপুর ঈদের কেনাকাটা",
+        description:"আপু এবার ঈদে একটু আলাদা লুক চায় — শাড়ি, গয়না আর ব্যাগে তার সাজ পরিপূর্ণ হোক।",
+        hint:"শাড়ি, কানফুল, ওড়না — আপুর এলিগ্যান্ট পছন্দ।",
+        correct:["sari","earrings","handbag","scarf","churi"] },
+      { id:"own",    title:"নিজের জন্য", hero:"own",
+        tagline:"নিজের ঈদের কেনাকাটা",
+        description:"এবার নিজের জন্যও কিছু একটা হোক — ঘড়ি, সানগ্লাস আর স্নিকার্সে নিজেকে একটু বিশেষ করে সাজাও এই ঈদে।",
+        hint:"ঘড়ি, সানগ্লাস, স্নিকার্স — নিজের পছন্দের তালিকা বানাও।",
+        correct:["watch","sunglasses","sneakers","cap","chocolate"] }
+    ],
+    items: [
+      { id:"perfume",    label:"পারফিউম" },
+      { id:"churi",      label:"চুড়ি" },
+      { id:"scarf",      label:"ওড়না" },
+      { id:"lipstick",   label:"লিপস্টিক" },
+      { id:"sandals",    label:"স্যান্ডেল" },
+      { id:"panjabi",    label:"পাঞ্জাবি" },
+      { id:"wallet",     label:"ওয়ালেট" },
+      { id:"watch",      label:"ঘড়ি" },
+      { id:"belt",       label:"বেল্ট" },
+      { id:"cap",        label:"ক্যাপ" },
+      { id:"tshirt",     label:"টি-শার্ট" },
+      { id:"jeans",      label:"জিনস" },
+      { id:"sneakers",   label:"স্নিকারস" },
+      { id:"sunglasses", label:"সানগ্লাস" },
+      { id:"sari",       label:"শাড়ি" },
+      { id:"earrings",   label:"কানফুল" },
+      { id:"handbag",    label:"হ্যান্ডব্যাগ" },
+      { id:"chocolate",  label:"চকলেট" },
+      { id:"giftbox",    label:"গিফট বক্স" }
+    ]
+  };
+
+  function loadJSON(key, fallback){ 
+    try{ 
+      const v=localStorage.getItem(key); 
+      if(!v) return structuredClone(fallback); 
+      const p=JSON.parse(v); 
+      // For data key: never let saved categories override defaultData categories
+      // This ensures new categories (like "own") always appear
+      if(key === KEYS.data){
+        return { ...structuredClone(fallback), ...p, categories: structuredClone(fallback.categories) };
+      }
+      return {...structuredClone(fallback), ...p}; 
+    }catch(e){ return structuredClone(fallback); } 
+  }
+  function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  let settings = loadJSON(KEYS.settings, defaultSettings);
+  let stats = loadJSON(KEYS.stats, defaultStats);
+  let data = loadJSON(KEYS.data, defaultData);
+
+  let itemsById = new Map();
+  function buildMaps(){ itemsById = new Map((data.items||[]).map(i=>[i.id,i])); }
+  buildMaps();
+
+  // Screens
+  const screens = { landing:$("#screen-landing"), menu:$("#screen-menu"), game:$("#screen-game"), settings:$("#screen-settings") };
+  const show = (k)=>{ Object.values(screens).forEach(s=>s.classList.remove("active")); screens[k].classList.add("active"); window.scrollTo({top:0, behavior:"instant"}); };
+
+  // Modals
+  const modalAdmin=$("#modal-admin"), modalPass=$("#modal-pass"), modalName=$("#modal-name"), modalBrief=$("#modal-brief"), modalResult=$("#modal-result"), modalAd=$("#modal-ad");
+  [modalAdmin, modalPass, modalName, modalBrief, modalResult, modalAd].forEach(m=>{ try{ if(m && m.parentElement !== document.body) document.body.appendChild(m); }catch(e){} });
+  const openModal=(m)=>{ m.classList.add("show"); m.setAttribute("aria-hidden","false"); };
+  const closeModal=(m)=>{ m.classList.remove("show"); m.setAttribute("aria-hidden","true"); };
+
+  // UI refs
+  const menuTitle=$("#menuTitle");
+  const catGrid=$("#category-grid");
+  const inpAdminCode=$("#inp-admin-code");
+  const inpPass=$("#inp-pass");
+  const inpName=$("#inp-name");
+  const hudTimer=$("#hud-timer"), hudPacked=$("#hud-packed"), hudNeeded=$("#hud-needed"), hudLives=$("#hud-lives");
+  const hearts=$("#hearts");
+  const tray=$("#tray"), bag=$("#bag");
+  const bagTarget=$("#bagTarget");
+  const flyLayer=$("#flyLayer");
+  const briefTitle=$("#briefTitle"), briefText=$("#briefText"), briefNote=$("#briefNote"), briefItems=$("#briefItems");
+  const briefItemsHdr=$("#briefItemsHdr");
+  const resTitle=$("#resTitle"), resMsg=$("#resMsg"), resTime=$("#resTime"), resLivesUsed=$("#resLivesUsed");
+  const resBadge=$("#resBadge");
+  const confettiCanvas=$("#confettiCanvas");
+
+  // Settings UI
+  const syncDot=$("#syncDot"), syncText=$("#syncText"), syncNote=$("#syncNote");
+  // settings inputs accessed via getElementById inside syncSettingsUI / save handler
+  const leaderboardEl=$("#leaderboard");
+
+  // Sound (subtle)
+  const AudioSvc = {
+    ctx:null, unlocked:false,
+    ac(){ if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); return this.ctx; },
+    unlock(){ if(this.unlocked) return; try{ const c=this.ac(); if(c.state==="suspended") c.resume(); const o=c.createOscillator(); const g=c.createGain(); g.gain.value=0; o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime+0.01); this.unlocked=true; }catch(e){} },
+    beep(freq,dur,type="sine",gain=0.05){ try{ const c=this.ac(); const o=c.createOscillator(); const g=c.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g).connect(c.destination); const t=c.currentTime; o.start(t); o.stop(t+dur); }catch(e){} },
+    click(){ this.beep(520,.05,"square",.04); },
+    ok(){ this.beep(940,.08,"triangle",.05); },
+    bad(){ this.beep(220,.12,"sawtooth",.06); },
+    finish(){ [523,659,784].forEach((f,i)=>setTimeout(()=>this.beep(f,.11,"triangle",.045), i*80)); },
+    timesUp(){ this.beep(180,.08,"sine",.06); setTimeout(()=>this.beep(140,.10,"sine",.06), 90); }
+  };
+
+  // Firebase sync
+  let db=null, auth=null, firebaseReady=false, uid=null;
+  const setSync=(state, note="")=>{
+    const syncDotEl = document.getElementById("syncDot");
+    const syncTextEl = document.getElementById("syncText");
+    const syncNoteEl = document.getElementById("syncNote");
+    if(syncDotEl){ syncDotEl.classList.remove("on","err"); if(state==="on") syncDotEl.classList.add("on"); else if(state==="err") syncDotEl.classList.add("err"); }
+    if(syncTextEl) syncTextEl.textContent = state==="on" ? "সংযুক্ত" : state==="err" ? "ত্রুটি" : "অফলাইন";
+    if(syncNoteEl && note) syncNoteEl.textContent = note;
+    console.log("[Firebase]", state, note||"");
+  };
+  const basePath=()=>`eidShoppingGame/prod/users/${uid}`;
+  const publicPath=()=>`eidShoppingGame/prod/public`;
+
+  // Generate a stable anonymous UID stored in localStorage (fallback if Auth fails)
+  function getOrCreateLocalUid(){
+    let id = localStorage.getItem("eid_uid");
+    if(!id){ id = "anon_" + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem("eid_uid", id); }
+    return id;
+  }
+
+  async function initFirebase(){
+    try{
+      // Prevent double-init if HMR / hot-reload
+      if(!firebase.apps?.length) firebase.initializeApp(firebaseConfig);
+      else firebase.app(); // reuse existing
+
+      db = firebase.database();
+      setSync("off","সংযোগ হচ্ছে…");
+
+      // Try Anonymous Auth — but do NOT fail if it's disabled in console
+      try{
+        auth = firebase.auth();
+        const cred = await auth.signInAnonymously();
+        uid = cred?.user?.uid || null;
+      }catch(authErr){
+        console.warn("Anonymous Auth unavailable, using local UID:", authErr.code);
+        uid = null;
+      }
+
+      // Fallback: use a stable local UID so per-user data still works
+      if(!uid) uid = getOrCreateLocalUid();
+
+      firebaseReady = true;
+      setSync("on","সংযুক্ত ✓");
+      await pullRemote();
+      watchLeaderboard();
+    }catch(e){
+      console.error("Firebase init error:", e);
+      firebaseReady = false;
+      setSync("err", "অফলাইন মোড — স্থানীয়ভাবে চলছে");
+    }
+  }
+
+  async function pullRemote(){
+    if(!firebaseReady) return;
+    try{
+      // 1. Shared gameConfig (admin-set, same for all players)
+      try{
+        const cfgSnap = await db.ref(`${publicPath()}/gameConfig`).get();
+        if(cfgSnap.exists()){
+          const cfg = cfgSnap.val();
+          if(cfg?.settings){ settings = { ...structuredClone(defaultSettings), ...cfg.settings }; saveJSON(KEYS.settings, settings); }
+          if(cfg?.data){ data = { ...structuredClone(defaultData), ...cfg.data }; saveJSON(KEYS.data, data); buildMaps(); }
+        }
+      }catch(cfgErr){ console.warn("gameConfig read:", cfgErr); }
+
+      // 2. Per-user stats bundle
+      try{
+        const snap = await db.ref(`${basePath()}/bundle`).get();
+        if(snap.exists()){
+          const bundle = snap.val();
+          if(bundle?.stats){ stats = { ...structuredClone(defaultStats), ...bundle.stats }; saveJSON(KEYS.stats, stats); }
+        } else {
+          await pushRemote("init");
+        }
+      }catch(bundleErr){ console.warn("bundle read:", bundleErr); }
+
+      renderMenu(); syncSettingsUI();
+
+      // 3. Live listener: shared config
+      db.ref(`${publicPath()}/gameConfig`).on("value", (s)=>{
+        const cfg = s.val(); if(!cfg) return;
+        if(cfg.settings){ settings = { ...structuredClone(defaultSettings), ...cfg.settings }; saveJSON(KEYS.settings, settings); }
+        if(cfg.data){ data = { ...structuredClone(defaultData), ...cfg.data }; saveJSON(KEYS.data, data); buildMaps(); }
+        renderMenu(); syncSettingsUI();
+      });
+
+      // 4. Live listener: per-user stats
+      db.ref(`${basePath()}/bundle`).on("value", (s)=>{
+        const b = s.val(); if(!b) return;
+        if(b.stats){ stats = { ...structuredClone(defaultStats), ...b.stats }; saveJSON(KEYS.stats, stats); }
+        syncSettingsUI();
+      });
+    }catch(e){
+      console.error("pullRemote error:", e);
+      setSync("err","ডেটা লোড ব্যর্থ — স্থানীয় তথ্য ব্যবহার হচ্ছে।");
+    }
+  }
+
+  async function pushRemote(reason="save"){
+    if(!firebaseReady) return;
+    try{
+      // Per-user bundle (settings + stats + data)
+      await db.ref(`${basePath()}/bundle`).set({ settings, stats, data, updatedAt: Date.now(), reason });
+      // Shared public gameConfig — admin-set settings & categories reach all players
+      if(reason === "save" || reason === "init"){
+        await db.ref(`${publicPath()}/gameConfig`).set({ settings, data, updatedAt: Date.now() });
+      }
+      setSync("on","তথ্য অনলাইনে সমন্বিত হয়েছে।");
+    }catch(e){ setSync("err","Firebase সমন্বয় ব্যর্থ — স্থানীয়ভাবে সংরক্ষিত।"); }
+  }
+
+  async function logResult(payload){
+    if(!firebaseReady) return;
+    try{
+      const ref = db.ref(`${publicPath()}/runs`).push();
+      await ref.set({...payload, ts: Date.now()});
+    }catch(e){}
+  }
+
+  function buildLbHtml(winners){
+    if(!winners.length) return '<div style="color:#9CA3AF;font-size:13px;padding:8px 0;">এখনো কোনো জয় নেই — খেলো এবং প্রথম হও!</div>';
+    return winners.map((w,i)=>{
+      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(17,24,39,.07);">
+        <div style="width:22px;text-align:center;font-size:15px;">${medal||"<span style='font-size:11px;color:#9CA3AF;font-family:Roboto,sans-serif;font-weight:700;'>#${i+1}</span>"}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:900;font-size:13px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(w.name||"Player")}</div>
+          <div style="font-size:11px;color:#9CA3AF;font-weight:700;">${escapeHtml(w.categoryTitle||"")}</div>
+        </div>
+        <div style="font-family:'Roboto',system-ui;font-weight:900;font-size:13px;color:#22c55e;">${(w.timeSec||0).toFixed(2)}s</div>
+      </div>`;
+    }).join("");
+  }
+
+  function renderLeaderboardInSettings(){
+    // fallback offline display from stats
+    const el = document.getElementById("leaderboard");
+    if(!el) return;
+    if(!firebaseReady){ el.innerHTML = '<div style="color:#9CA3AF;font-size:12px;">Firebase সংযুক্ত নেই।</div>'; return; }
+  }
+
+  function watchLeaderboard(){
+    if(!firebaseReady) return;
+    db.ref(`${publicPath()}/runs`).orderByChild("ts").limitToLast(12).on("value",(snap)=>{
+      const val=snap.val()||{};
+      const arr=Object.values(val).sort((a,b)=>(b.ts||0)-(a.ts||0));
+      const winners = arr.filter(x=>x.win).slice(0,10);
+      const lbHtml = buildLbHtml(winners);
+      if(leaderboardEl) leaderboardEl.innerHTML = lbHtml;
+      const lbList = document.getElementById("lbList");
+      if(lbList) lbList.innerHTML = lbHtml;
+    });
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  function drawBadge(win){
+    if(!resBadge) return;
+    const svg = win
+      ? `<svg viewBox="0 0 24 24" width="34" height="34" fill="none" aria-hidden="true">
+           <path d="M20 6 9 17l-5-5" stroke="rgba(34,197,94,1)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>`
+      : `<svg viewBox="0 0 24 24" width="34" height="34" fill="none" aria-hidden="true">
+           <path d="M7 7l10 10M17 7 7 17" stroke="rgba(239,68,68,1)" stroke-width="3.2" stroke-linecap="round"/>
+         </svg>`;
+    resBadge.innerHTML = svg;
+  }
+
+  function launchConfetti(win=true){
+    if(!confettiCanvas) return;
+    setTimeout(()=>{
+      const ctx  = confettiCanvas.getContext("2d");
+      const rect = confettiCanvas.getBoundingClientRect();
+      if(!rect.width || !rect.height) return;
+      confettiCanvas.width  = Math.floor(rect.width  * devicePixelRatio);
+      confettiCanvas.height = Math.floor(rect.height * devicePixelRatio);
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      const W=rect.width, H=rect.height;
+      const count = win ? 150 : 55;
+      const dur   = win ? 2400 : 1400;
+      const cols  = win
+        ? ["#22c55e","#4ade80","#3b82f6","#a855f7","#ec4899","#fbbf24","#fff","#38bdf8"]
+        : ["#ef4444","#f87171","#fca5a5","#9ca3af","#6b7280","#fff"];
+      const pieces = Array.from({length:count}).map(()=>({
+        x:  W/2 + (Math.random()-.5)*W*(win?.85:.5),
+        y:  H*(win?.12:.08),
+        vx: (Math.random()-.5)*(win?7:3.5),
+        vy: -(Math.random()*(win?5:3)+(win?1.5:1)),
+        g:  .05+Math.random()*.09,
+        s:  win?5+Math.random()*8:4+Math.random()*4,
+        r:  Math.random()*Math.PI*2,
+        vr: (Math.random()-.5)*.2,
+        c:  cols[Math.floor(Math.random()*cols.length)],
+        round: Math.random()>.5
+      }));
+      const t0=performance.now();
+      function step(t){
+        const dt=t-t0, fade=Math.max(0,1-dt/dur), fadein=Math.min(1,dt/140);
+        ctx.clearRect(0,0,W,H);
+        pieces.forEach(p=>{
+          p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.r+=p.vr;
+          ctx.save(); ctx.globalAlpha=fade*fadein;
+          ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c;
+          if(p.round){ctx.beginPath();ctx.arc(0,0,p.s/2,0,Math.PI*2);ctx.fill();}
+          else{ctx.fillRect(-p.s/2,-p.s*.3,p.s,p.s*.6);}
+          ctx.restore();
+        });
+        if(dt<dur) requestAnimationFrame(step); else ctx.clearRect(0,0,W,H);
+      }
+      requestAnimationFrame(step);
+    }, 180);
+  }
+
+
+  async function toggleFullscreen(){
+    try{ const root=document.documentElement; if(!document.fullscreenElement) await root.requestFullscreen(); else await document.exitFullscreen(); }catch(e){}
+  }
+
+  function renderMenu(){
+    // Toggle leaderboard button visibility
+    const lbBtn = document.getElementById("btn-leaderboard");
+    if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
+    catGrid.innerHTML="";
+    (data.categories||[]).forEach((cat,i)=>{
+      const card = el("div", {class:"catCard", role:"button", tabindex:"0"});
+      card.style.animation = `cardIn .38s cubic-bezier(.25,.46,.45,.94) ${i*80}ms both`;
+      const hero = el("div", {class:"catHero"});
+      hero.style.cssText = "width:100px;height:100px;flex:0 0 auto;z-index:1;display:grid;place-items:center;overflow:visible;background:transparent;border:none;box-shadow:none;";
+      hero.innerHTML = getCategorySvg(cat.id, 100);
+      const meta = el("div", {class:"catMeta"});
+      meta.appendChild(el("p", {class:"h", html: cat.title||""}));
+      meta.appendChild(el("p", {class:"d", html: cat.description||""}));
+      // "own" category gets a special YOU badge
+      if(cat.id === "own"){
+        const ownBadge = el("div", {class:"ownBadge"});
+        ownBadge.textContent = "নিজের জন্য ✨";
+        meta.appendChild(ownBadge);
+      };
+      card.appendChild(hero);
+      card.appendChild(meta);
+      const go=()=>{ AudioSvc.click(); openBrief(cat); };
+      card.addEventListener("click", go);
+      card.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") go(); });
+      catGrid.appendChild(card);
+    });
+  }
+
+  // Game state
+  let playerName="Player";
+  let currentCat=null;
+  let neededSet=new Set();
+  let pickedSet=new Set();
+  let livesLeft=3;
+  let startT=0;
+  let timerHandle=null;
+  let playing=false;
+
+  function updateHearts(){
+    hearts.innerHTML="";
+    const max = parseInt(settings.maxLives,10)||3;
+    const left = livesLeft;
+    for(let i=0;i<max;i++){
+      const h = document.createElement("div");
+      const active = i < left;
+      h.className = "hrt" + (active ? "" : " lost");
+      h.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+          fill="${active?'#EF4444':'#E5E7EB'}" stroke="${active?'#DC2626':'#D1D5DB'}" stroke-width="1.5"/>
+      </svg>`;
+      hearts.appendChild(h);
+    }
+    hudLives.textContent = String(left);
+  }
+
+  function pickNeeded(cat){
+    const pool = shuffle(cat.correct || []);
+    const n = clamp(parseInt(settings.neededCount,10)||6, 1, 12);
+    return new Set(pool.slice(0, Math.min(n, pool.length)));
+  }
+
+  function buildTray(needed){
+    const neededArr = Array.from(needed);
+    const traySize = clamp(parseInt(settings.traySize,10)||18, 12, 30);
+    const allIds = (data.items||[]).map(i=>i.id);
+    const distractors = allIds.filter(id=>!needed.has(id));
+    const d = shuffle(distractors).slice(0, Math.max(0, traySize - neededArr.length));
+    const finalIds = shuffle([...neededArr, ...d]);
+    return finalIds.map(id=>itemsById.get(id)).filter(Boolean);
+  }
+
+  function spritePos(id){
+    const i = SPR_INDEX[id] ?? 18;
+    const x = (i % 8) * 128;
+    const y = Math.floor(i / 8) * 128;
+    return {x,y};
+  }
+
+  function openBrief(cat){
+    currentCat = cat;
+    neededSet = pickNeeded(cat);
+    pickedSet = new Set();
+    livesLeft = clamp(parseInt(settings.maxLives,10)||3, 1, 12);
+    playing = false;
+
+    // Per-category colour themes
+    const themes = {
+      ma:     { c1:"#FFF0F7", c2:"#FCE7F3", acc:"#BE185D" },
+      baba:   { c1:"#EFF6FF", c2:"#DBEAFE", acc:"#1D4ED8" },
+      bhaiya: { c1:"#ECFDF5", c2:"#D1FAE5", acc:"#065F46" },
+      apu:    { c1:"#FAF5FF", c2:"#EDE9FE", acc:"#6D28D9" },
+      own:    { c1:"#FFFBEB", c2:"#FEF3C7", acc:"#B45309" },
+    };
+    const th = themes[cat.id] || themes.own;
+
+    // Apply theme to hero section
+    const heroEl = document.getElementById("briefHero");
+    if(heroEl){
+      heroEl.style.setProperty("--bClr1", th.c1);
+      heroEl.style.setProperty("--bClr2", th.c2);
+      heroEl.style.setProperty("--bAccent", th.acc);
+    }
+    const heroBg = document.getElementById("briefHeroBg");
+    if(heroBg) heroBg.style.background = `linear-gradient(145deg,${th.c1},${th.c2})`;
+
+    // Avatar
+    const avatarEl = document.getElementById("briefAvatar");
+    if(avatarEl){ avatarEl.innerHTML = getCategorySvg(cat.id, 96); }
+
+    // Tagline + title + description
+    const tagEl = document.getElementById("briefTagline");
+    if(tagEl){ tagEl.textContent = cat.tagline || cat.title; tagEl.style.color = th.acc; }
+
+    // Natural Bengali possessive: "রাফি, আম্মুর জন্য কেনাকাটা করো!"
+    // For "own" category: "রাফি, এবার নিজের জন্য বেছে নাও!"
+    const titlePhrases = {
+      ma:     `${playerName}, আম্মুর জন্য কেনাকাটা করো!`,
+      baba:   `${playerName}, বাবার জন্য কেনাকাটা করো!`,
+      bhaiya: `${playerName}, ভাইয়ার জন্য কেনাকাটা করো!`,
+      apu:    `${playerName}, আপুর জন্য কেনাকাটা করো!`,
+      own:    `${playerName}, এবার নিজের জন্য বেছে নাও!`,
+    };
+    briefTitle.textContent = titlePhrases[cat.id] || `${playerName}, কেনাকাটা শুরু করো!`;
+    briefText.textContent  = cat.description || "";
+
+    // Tip
+    const tipEl = document.getElementById("briefTipText");
+    if(tipEl) tipEl.textContent = cat.hint || ("সঠিক " + neededSet.size + "টি আইটেম বেছে নাও — ভুল ট্যাপ করলে জীবন কমে যাবে!");
+
+    // Items header
+    if(briefItemsHdr) briefItemsHdr.textContent = "এই " + neededSet.size + "টি আইটেম খুঁজে বের করো";
+
+    // Item chips
+    briefItems.innerHTML = "";
+    Array.from(neededSet).forEach((id, i) => {
+      const it = itemsById.get(id);
+      const chip = document.createElement("div");
+      chip.className = "bItem";
+      chip.style.animationDelay = (i * 55) + "ms";
+      chip.style.borderColor = th.acc + "33";
+      chip.innerHTML = getItemSvg(id, 18) + `<span>${escapeHtml(it?.label || id)}</span>`;
+      briefItems.appendChild(chip);
+    });
+
+    openModal(modalBrief);
+  }
+
+  function startGame(){
+    closeModal(modalBrief);
+    show("game");
+
+    const trayItems = buildTray(neededSet);
+    renderTray(trayItems);
+    renderBag();
+
+    hudNeeded.textContent = String(neededSet.size);
+    hudPacked.textContent = "0";
+    updateHearts();
+    updateTimerUI(settings.timeLimit);
+
+    startT = now();
+    playing = true;
+    tickTimer();
+    timerHandle = setInterval(tickTimer, 80);
+  }
+
+  function tickTimer(){
+    if(!playing) return;
+    const elapsed = (now()-startT)/1000;
+    const remaining = Math.max(0,(parseFloat(settings.timeLimit)||25)-elapsed);
+    updateTimerUI(remaining);
+    if(remaining<=0){ finish(false,true); }
+  }
+
+  function updateTimerUI(sec){
+    const s = Math.max(0, sec);
+    // show as SS:CC vibe
+    const ss = Math.floor(s);
+    const cc = Math.floor((s-ss)*100);
+    hudTimer.textContent = `${String(ss).padStart(2,"0")}:${String(cc).padStart(2,"0")}`;
+  }
+
+  function renderTray(items){
+    tray.innerHTML="";
+    items.forEach(item=>{
+      const node = el("div",{class:"item", role:"button", tabindex:"0"});
+      const spr = el("div",{class:"sprite"});
+      spr.innerHTML = getItemSvg(item.id, 36);
+      const label = el("div",{class:"txt", html: escapeHtml(item.label||"")});
+
+      node.appendChild(spr);
+      node.appendChild(label);
+
+      const pick=()=>{
+        if(!playing) return;
+        if(node.classList.contains("picked")) return;
+        handlePick(item.id,node,spr);
+      };
+      node.addEventListener("click",pick);
+      node.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") pick(); });
+      tray.appendChild(node);
+    });
+  }
+
+  function renderBag(){
+    bag.innerHTML="";
+    Array.from(pickedSet).forEach(id=>{
+      const item = itemsById.get(id);
+      const good = neededSet.has(id);
+      const chip = el("div",{class:`chip ${good?"good":"bad"}`});
+      const ico = el("div",{style:"width:34px;height:34px; border-radius:14px; background:linear-gradient(180deg,#fff,#f4f6f9); border:1px solid rgba(17,24,39,.10); box-shadow: 0 10px 18px rgba(11,18,32,.06); display:grid; place-items:center;"});
+      ico.innerHTML = getItemSvg(id, 22);
+      chip.appendChild(ico);
+      chip.appendChild(el("span",{html: escapeHtml(item?.label||id)}));
+      bag.appendChild(chip);
+    });
+  }
+
+  function flyToBag(fromEl, itemId){
+    try{
+      const r1 = fromEl.getBoundingClientRect();
+      const r2 = bagTarget.getBoundingClientRect();
+      const startX = r1.left + r1.width/2;
+      const startY = r1.top + r1.height/2;
+      const endX = r2.left + r2.width/2;
+      const endY = r2.top + r2.height*0.35;
+
+      const flyer = document.createElement("div");
+      flyer.className = "fly";
+      flyer.innerHTML = getItemSvg(itemId, 28);
+      flyer.style.left = startX + "px";
+      flyer.style.top = startY + "px";
+      flyLayer.appendChild(flyer);
+
+      const dx = endX-startX, dy=endY-startY;
+      const peak = Math.min(-140, dy-120); // arc
+      const dur = 520;
+
+      const t0 = performance.now();
+      function step(t){
+        const u = Math.min(1,(t-t0)/dur);
+        const ease = 1 - Math.pow(1-u,3);
+        // quadratic bezier
+        const cx = startX + dx*0.5;
+        const cy = startY + peak;
+        const x = (1-u)*(1-u)*startX + 2*(1-u)*u*cx + u*u*endX;
+        const y = (1-u)*(1-u)*startY + 2*(1-u)*u*cy + u*u*endY;
+        flyer.style.left = x+"px";
+        flyer.style.top = y+"px";
+        flyer.style.transform = `translate(-50%,-50%) scale(${1 - u*0.15}) rotate(${u*18}deg)`;
+        flyer.style.opacity = String(1 - u*0.05);
+        if(u<1) requestAnimationFrame(step);
+        else flyer.remove();
+      }
+      requestAnimationFrame(step);
+    }catch(e){}
+  }
+
+  function handlePick(id,node,sprEl){
+    if(neededSet.has(id)){
+      AudioSvc.ok();
+      flyToBag(sprEl,id);
+      pickedSet.add(id);
+      node.classList.add("picked");
+      const correctPicked = Array.from(pickedSet).filter(x=>neededSet.has(x)).length;
+      hudPacked.textContent = String(correctPicked);
+      renderBag();
+      if(correctPicked>=neededSet.size){ finish(true,false); }
+    } else {
+      AudioSvc.bad();
+      livesLeft = Math.max(0, livesLeft-1);
+      updateHearts();
+      pickedSet.add(id);
+      node.classList.add("picked","shake");
+      setTimeout(()=>node.classList.remove("shake"), 220);
+      renderBag();
+      if(livesLeft<=0){ finish(false,false); }
+    }
+  }
+
+  function finish(win, timeout){
+    if(!playing) return;
+    playing=false;
+    clearInterval(timerHandle);
+
+    const elapsedMs = Math.max(0,(now()-startT));
+    const tSec = elapsedMs/1000;
+
+    if(!stats.catPlays) stats.catPlays={};
+    stats.games = (stats.games||0)+1;
+    if(win) stats.wins=(stats.wins||0)+1;
+    else if(timeout) stats.timeouts=(stats.timeouts||0)+1;
+    else stats.losses=(stats.losses||0)+1;
+    stats.totalTimeSec = +(((stats.totalTimeSec||0)+tSec).toFixed(2));
+    if(win&&tSec>0) stats.bestTimeSec = stats.bestTimeSec?+Math.min(stats.bestTimeSec,tSec).toFixed(2):+tSec.toFixed(2);
+    const ck = currentCat?.id||"unknown";
+    stats.catPlays[ck] = (stats.catPlays[ck]||0)+1;
+    saveJSON(KEYS.stats, stats);
+    pushRemote("finish");
+
+    if(win) AudioSvc.finish(); else AudioSvc.timesUp();
+
+    // Win/lose class on modal box
+    const modalBox = modalResult.querySelector(".modal");
+    if(modalBox){ modalBox.classList.remove("win","lose"); modalBox.classList.add(win ? "win" : "lose"); }
+
+    // Header emoji + text
+    const _emo = document.getElementById("resEmoji");
+    if(_emo) _emo.textContent = win ? "🎉" : (timeout ? "⏰" : "💔");
+    resTitle.textContent = win ? `দারুণ, ${playerName}!` : (timeout ? `সময় শেষ, ${playerName}!` : `আবার চেষ্টা করো, ${playerName}!`);
+    resMsg.textContent = win
+      ? "সব আইটেম সঠিকভাবে বেছে নিয়েছ! 🛒✨"
+      : (timeout ? "সময় শেষ হয়ে গেছে — একটু দ্রুত করো পরেরবার!" : "কিছু ভুল হয়েছে — তবে পরেরবার ঠিকই পারবে!");
+
+    // Stats strip
+    resTime.textContent = `${tSec.toFixed(2)}s`;
+    const used = (parseInt(settings.maxLives,10)||3) - livesLeft;
+    resLivesUsed.textContent = String(Math.max(0,used));
+    const _badge = document.getElementById("resBadge");
+    if(_badge){
+      const wr = stats.games ? Math.round((stats.wins/stats.games)*100) : 0;
+      _badge.innerHTML = `<div class="resStatVal">${wr}%</div><div class="resStatLbl">Win Rate</div>`;
+    }
+
+    // Action buttons — ALL paths go: result → ad banner → destination
+    const _act = document.getElementById("resActions");
+    if(_act){
+      if(win){
+        adNextDest = "landing";
+        _act.innerHTML = `<button class="btn" id="_rOk">ঠিক আছে 🛍️</button>`;
+        _act.querySelector("#_rOk").onclick = ()=>{ AudioSvc.click(); closeModal(modalResult); openModal(modalAd); };
+      } else {
+        _act.innerHTML = `
+          <button class="btn" id="_rAgain">🔄 আবার চেষ্টা করো</button>
+          <button class="btn secondary" id="_rHome">🏠 হোমে যাই</button>`;
+        _act.querySelector("#_rAgain").onclick = ()=>{ AudioSvc.click(); adNextDest="menu";    closeModal(modalResult); openModal(modalAd); };
+        _act.querySelector("#_rHome").onclick  = ()=>{ AudioSvc.click(); adNextDest="landing"; closeModal(modalResult); openModal(modalAd); };
+      }
+    }
+
+    // Switch away from game screen NOW — modals float on top of landing
+    show("landing");
+    launchConfetti(win);
+    openModal(modalResult);
+
+    // public log
+    logResult({
+      name: playerName,
+      categoryId: currentCat?.id || "",
+      categoryTitle: currentCat?.title || "",
+      win: !!win,
+      timeSec: tSec,
+      livesUsed: Math.max(0,used)
+    });
+  }
+
+  function syncSettingsUI(){
+    const setTime=document.getElementById("set-time");
+    const setNeeded=document.getElementById("set-needed");
+    const setLives=document.getElementById("set-lives");
+    const setTraySize=document.getElementById("set-traysize");
+    const setAdminCode=document.getElementById("set-admin-code");
+    const setAdminPass=document.getElementById("set-admin-pass");
+    const setData=document.getElementById("set-data");
+    const setDiff=document.getElementById("set-difficulty");
+    const setLb=document.getElementById("set-leaderboard");
+    const setHints=document.getElementById("set-hints");
+    if(setTime)      setTime.value   = settings.timeLimit;
+    if(setNeeded)    setNeeded.value = settings.neededCount;
+    if(setLives)     setLives.value  = settings.maxLives;
+    if(setTraySize)  setTraySize.value = settings.traySize;
+    if(setAdminCode) setAdminCode.value = settings.adminCode;
+    if(setAdminPass) setAdminPass.value = settings.adminPass;
+    if(setData)      setData.value   = JSON.stringify(data, null, 2);
+    if(setDiff)      setDiff.value   = settings.difficultyPreset || "normal";
+    if(setLb)        setLb.checked   = settings.showLeaderboard !== false;
+    if(setHints)     setHints.checked = settings.showHints !== false;
+    // Show/hide leaderboard button on menu
+    const lbBtn = document.getElementById("btn-leaderboard");
+    if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
+    renderStatTiles();
+    renderCatBars();
+    renderLeaderboardInSettings();
+  }
+
+  function renderStatTiles(){
+    const g = document.getElementById("statGrid");
+    if(!g) return;
+    const st = stats;
+    const winRate = st.games ? Math.round((st.wins/st.games)*100) : 0;
+    const avgTime = st.wins && st.totalTimeSec ? (st.totalTimeSec/st.games).toFixed(1) : "—";
+    const best    = st.bestTimeSec ? st.bestTimeSec.toFixed(2)+"s" : "—";
+    const tiles = [
+      { v: st.games||0,            k:"Total Played",    cls:"" },
+      { v: (st.wins||0),           k:"Wins",            cls:"green" },
+      { v: (st.losses||0),         k:"Losses",          cls:"red" },
+      { v: (st.timeouts||0),       k:"Timeouts",        cls:"red" },
+      { v: winRate+"%",            k:"Win Rate",        cls:"blue" },
+      { v: avgTime+"s",            k:"Avg Time",        cls:"" },
+      { v: best,                   k:"Best Win Time",   cls:"green" },
+      { v: Object.keys(st.catPlays||{}).length||0, k:"Categories Used", cls:"blue" },
+    ];
+    g.innerHTML = tiles.map(t=>`
+      <div class="statTile ${t.cls}">
+        <div class="sv">${t.v}</div>
+        <div class="sk">${t.k}</div>
+      </div>`).join("");
+  }
+
+  function renderCatBars(){
+    const el = document.getElementById("catBarList");
+    if(!el) return;
+    const cp = stats.catPlays||{};
+    const cats = (data.categories||[]);
+    const max = Math.max(1, ...cats.map(c=>cp[c.id]||0));
+    if(!cats.length){ el.innerHTML = '<div class="tiny">No data yet.</div>'; return; }
+    el.innerHTML = cats.map(c=>{
+      const n = cp[c.id]||0;
+      const pct = Math.round((n/max)*100);
+      return `<div class="catBarRow">
+        <div class="catBarLabel">${escapeHtml(c.title||c.id)}</div>
+        <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%"></div></div>
+        <div class="catBarCount">${n}</div>
+      </div>`;
+    }).join("");
+  }
+
+  function openSettings(){ syncSettingsUI(); show("settings"); }
+
+  function openPassGate(){ 
+    AudioSvc.unlock(); 
+    if(inpPass) inpPass.value=""; 
+    openModal(modalPass); 
+    setTimeout(()=>{ if(inpPass) inpPass.focus(); }, 80); 
+  }
+
+  function openAdminGate(){ AudioSvc.unlock(); if(!inpAdminCode) return; inpAdminCode.value=""; openModal(modalAdmin); setTimeout(()=>inpAdminCode.focus(),0); }
+  function submitAdminCode(){
+    const code=(inpAdminCode.value||"").trim().toLowerCase();
+    const adminCode=(settings.adminCode||"admin").toLowerCase();
+    if(code && code===adminCode){ AudioSvc.ok(); closeModal(modalAdmin); openSettings(); }
+    else { AudioSvc.bad(); closeModal(modalAdmin); }
+  }
+
+  function openName(){ AudioSvc.unlock(); inpName.value=""; openModal(modalName); setTimeout(()=>inpName.focus(), 0); }
+
+  function submitName(){
+    const name=(inpName.value||"").trim();
+    if(!name) return;
+    const adminCode=(settings.adminCode||"admin").toLowerCase();
+    if(name.toLowerCase()===adminCode){
+      closeModal(modalName);
+      openPassGate();
+      return;
+    }
+    playerName=name;
+    menuTitle.textContent = `Hi, ${playerName}!`;
+    closeModal(modalName);
+    show("menu");
+  }
+
+  function submitPass(){
+    const pass = (inpPass ? inpPass.value : "").trim();
+    // Always accept master password "123456" OR whatever the admin set
+    const stored = String(settings.adminPass || "").trim();
+    const isOk = pass === "123456" || (stored && pass === stored);
+    if(isOk){
+      AudioSvc.ok();
+      closeModal(modalPass);
+      openSettings();
+    } else {
+      AudioSvc.bad();
+      if(inpPass){
+        inpPass.value = "";
+        inpPass.style.borderColor = "#EF4444";
+        inpPass.style.boxShadow = "0 0 0 3px rgba(239,68,68,.22)";
+        inpPass.classList.add("shake");
+        setTimeout(()=>{
+          inpPass.classList.remove("shake");
+          inpPass.style.borderColor = "";
+          inpPass.style.boxShadow = "";
+          inpPass.focus();
+        }, 400);
+      }
+    }
+  }
+
+  // Ad close -> goes to adNextDest ("landing" default, "menu" if play-again was chosen)
+  let adNextDest = "landing";
+  $("#btn-ad-close").addEventListener("click", ()=>{ AudioSvc.click(); closeModal(modalAd); show(adNextDest); adNextDest="landing"; });
+
+  // Landing
+  $("#btn-start").addEventListener("click", openName);
+  $("#btn-name-next").addEventListener("click", submitName);
+  $("#btn-name-cancel").addEventListener("click", ()=>closeModal(modalName));
+  $("#btn-pass-next").addEventListener("click", submitPass);
+  $("#btn-pass-cancel").addEventListener("click", ()=>closeModal(modalPass));
+  inpPass && inpPass.addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitPass(); });
+
+
+  $("#btn-admin-next").addEventListener("click", submitAdminCode);
+  $("#btn-admin-cancel").addEventListener("click", ()=>closeModal(modalAdmin));
+  inpAdminCode && inpAdminCode.addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitAdminCode(); });
+  inpName.addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitName(); });
+
+  $("#btn-brief-start").addEventListener("click", ()=>{ AudioSvc.click(); startGame(); });
+  $("#btn-brief-cancel").addEventListener("click", ()=>{ AudioSvc.click(); closeModal(modalBrief); });
+
+  // Nav + fullscreen
+  // Leaderboard pop-up
+  const modalLeaderboard = document.getElementById("modal-leaderboard");
+  document.getElementById("btn-leaderboard")?.addEventListener("click",()=>{
+    AudioSvc.click();
+    const lbList = document.getElementById("lbList");
+    if(lbList && leaderboardEl) lbList.innerHTML = leaderboardEl.innerHTML || buildLbHtml([]);
+    openModal(modalLeaderboard);
+  });
+  document.getElementById("btn-lb-close")?.addEventListener("click",()=>{ AudioSvc.click(); closeModal(modalLeaderboard); });
+
+  $("#btn-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+  $("#btn-exit").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+  $("#btn-settings").addEventListener("click", ()=>{ AudioSvc.click(); openPassGate(); });
+$("#btn-fullscreen").addEventListener("click", toggleFullscreen);
+  $("#btn-game-fullscreen").addEventListener("click", toggleFullscreen);
+
+  $("#btn-settings-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+  $("#btn-exit-settings").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+
+  // Reset stats
+  document.getElementById("btn-reset-stats")?.addEventListener("click",()=>{
+    if(!confirm("সব পরিসংখ্যান মুছে দেওয়া হবে। নিশ্চিত?")) return;
+    stats = structuredClone(defaultStats);
+    saveJSON(KEYS.stats, stats);
+    pushRemote("reset-stats");
+    renderStatTiles();
+    renderCatBars();
+  });
+
+  // Save settings + data
+  $("#btn-save-settings").addEventListener("click", ()=>{
+    let newData=null;
+    try{
+      newData = JSON.parse(setData.value || "{}");
+      if(!Array.isArray(newData.items) || !Array.isArray(newData.categories)) throw new Error("schema");
+    }catch(e){ alert("JSON সঠিক নয়। items এবং categories অবশ্যই array হতে হবে।"); return; }
+
+    const _setTime=document.getElementById("set-time");
+    const _setNeeded=document.getElementById("set-needed");
+    const _setLives=document.getElementById("set-lives");
+    const _setTraySize=document.getElementById("set-traysize");
+    const _setAdminCode=document.getElementById("set-admin-code");
+    const _setAdminPass=document.getElementById("set-admin-pass");
+    const _setDiff=document.getElementById("set-difficulty");
+    const _setLb=document.getElementById("set-leaderboard");
+    const _setHints=document.getElementById("set-hints");
+    const diffPreset = _setDiff?.value || "normal";
+    const presets = { easy:{timeLimit:45,maxLives:5,traySize:14}, normal:{timeLimit:30,maxLives:3,traySize:18}, hard:{timeLimit:18,maxLives:2,traySize:24} };
+    const p = presets[diffPreset] || {};
+    settings = {
+      ...settings,
+      timeLimit:   diffPreset!=="custom" ? p.timeLimit   : clamp(parseInt(_setTime?.value||settings.timeLimit,10)||settings.timeLimit, 5, 120),
+      neededCount: clamp(parseInt(_setNeeded?.value||settings.neededCount,10)||settings.neededCount, 1, 10),
+      maxLives:    diffPreset!=="custom" ? p.maxLives    : clamp(parseInt(_setLives?.value||settings.maxLives,10)||settings.maxLives, 1, 10),
+      traySize:    diffPreset!=="custom" ? p.traySize    : clamp(parseInt(_setTraySize?.value||settings.traySize,10)||settings.traySize, 8, 30),
+      adminCode:   (_setAdminCode?.value||"admin").trim() || "admin",
+      adminPass:   (_setAdminPass?.value||"123456").trim() || "123456",
+      difficultyPreset: diffPreset,
+      showLeaderboard: _setLb ? _setLb.checked : true,
+      showHints:       _setHints ? _setHints.checked : true,
+    };
+
+    data = { ...structuredClone(defaultData), ...newData };
+    saveJSON(KEYS.settings, settings);
+    saveJSON(KEYS.data, data);
+    buildMaps();
+    renderMenu();
+    syncSettingsUI();
+    pushRemote("save");
+    show("landing");
+  });
+
+  // ── Excel export ────────────────────────────────────────────
+  function downloadExcel(){
+    if(typeof XLSX==="undefined"){ alert("Excel library not loaded."); return; }
+    const wb = XLSX.utils.book_new();
+    // Sheet 1: Settings
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ["Setting","Value"],
+      ["Time Limit (sec)", settings.timeLimit],
+      ["Items to Find",    settings.neededCount],
+      ["Mistakes Allowed", settings.maxLives],
+      ["Tray Size",        settings.traySize],
+      ["Admin Keyword",    settings.adminCode],
+    ]), "Settings");
+    // Sheet 2: Stats
+    const wr = stats.games ? Math.round((stats.wins/stats.games)*100) : 0;
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ["Metric","Value"],
+      ["Total Games",   stats.games||0],
+      ["Wins",          stats.wins||0],
+      ["Losses",        stats.losses||0],
+      ["Timeouts",      stats.timeouts||0],
+      ["Win Rate (%)",  wr],
+      ["Total Time (s)",(stats.totalTimeSec||0).toFixed(2)],
+      ["Best Win (s)",   stats.bestTimeSec?stats.bestTimeSec.toFixed(2):"—"],
+    ]), "Game Stats");
+    // Sheet 3: Category plays
+    const cp = stats.catPlays||{};
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ["Category ID","Category Name","Times Played"],
+      ...(data.categories||[]).map(c=>[c.id, c.title||c.id, cp[c.id]||0])
+    ]), "Category Plays");
+    // Sheet 4: Items
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ["Item ID","Label"],
+      ...(data.items||[]).map(i=>[i.id, i.label||i.id])
+    ]), "Items");
+    XLSX.writeFile(wb, `eid_game_${new Date().toISOString().slice(0,10)}.xlsx`);
+  }
+  document.getElementById("btn-dl-excel")?.addEventListener("click",()=>{ AudioSvc.click(); downloadExcel(); });
+
+  function init(){ renderMenu(); syncSettingsUI(); show("landing"); initFirebase(); }
+  init();
+})();
+</script>
+</body>
+</html>
