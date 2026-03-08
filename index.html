@@ -443,16 +443,36 @@
     }
     .bItem:hover{background:#fff;border-color:rgba(17,24,39,.18);}
     @keyframes bItemIn{from{opacity:0;transform:translateY(6px) scale(.93)}to{opacity:1;transform:none}}
-    .briefTip{
       display:flex;align-items:flex-start;gap:10px;
       padding:11px 13px;border-radius:14px;
       background:linear-gradient(135deg,#FFFBEB,#FEF3C7);
       border:1px solid #FDE68A;margin-bottom:2px;
     }
     .briefTipIcon{font-size:16px;flex-shrink:0;line-height:1.3;}
-    .briefTipText{font-size:12px;font-weight:800;color:#92400E;line-height:1.45;}
     /* legacy compat */
     .briefTop,.briefCopy,.briefStats,.briefRule,.briefAvatar{display:none!important;}
+
+    /* ── Mall picker modal ── */
+    #modal-mall .modal{ max-width:480px; }
+    .mallPickerTitle{ font-size:19px;font-weight:1000;text-align:center;letter-spacing:-.02em;color:var(--ink);margin:0 0 4px; }
+    .mallPickerSub{ font-size:13px;font-weight:700;color:#6B7280;text-align:center;margin:0 0 18px; }
+    .mallGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 2px; }
+    .mallCard{
+      position:relative;
+      display:flex;flex-direction:column;align-items:center;
+      gap:8px;padding:14px 10px 12px;
+      border-radius:18px;border:2px solid transparent;
+      cursor:pointer;user-select:none;
+      transition:transform .15s,border-color .15s,box-shadow .15s;
+      background:#FAFAFA;
+      overflow:hidden;
+    }
+    .mallCard:hover{ transform:translateY(-2px); box-shadow:0 10px 28px rgba(11,18,32,.12); }
+    .mallCard.selected{ border-color:var(--mClr,#1D4ED8); background:var(--mBg,#EFF6FF); box-shadow:0 8px 24px rgba(11,18,32,.10); }
+    .mallCard.selected::after{ content:"✓"; position:absolute;top:7px;right:9px;font-size:13px;font-weight:900;color:var(--mClr,#1D4ED8); }
+    .mallPixel{ width:72px;height:72px;flex-shrink:0; }
+    .mallName{ font-size:13px;font-weight:1000;color:var(--ink);text-align:center;line-height:1.25; }
+    .mallTagline{ font-size:10px;font-weight:700;color:#9CA3AF;text-align:center;line-height:1.3; }
 
     .ownBadge{
       display:inline-flex;align-items:center;gap:5px;
@@ -462,6 +482,45 @@
       font-size:11px;font-weight:900;color:#B45309;
       letter-spacing:.02em;
     }
+
+    /* ── Landing leaderboard button ── */
+    .btn-leaderboard-landing{
+      display:none; /* shown by JS when showLeaderboard=true */
+      font-family:"Hind Siliguri","Roboto",system-ui,sans-serif;
+      font-size:15px;font-weight:900;
+      color:#E4136C;background:rgba(255,255,255,.92);
+      border:2px solid rgba(228,19,108,.35);
+      border-radius:10px;cursor:pointer;
+      width:min(480px,88%);padding:13px 24px;
+      box-shadow:0 4px 16px rgba(228,19,108,.15);
+      margin-top:14px;
+      transition:background .15s,box-shadow .15s,transform .1s;
+      letter-spacing:.01em;
+    }
+    .btn-leaderboard-landing:hover{
+      background:rgba(255,255,255,1);
+      box-shadow:0 6px 22px rgba(228,19,108,.22);
+      transform:translateY(-1px);
+    }
+    .btn-leaderboard-landing:active{ transform:translateY(1px); }
+
+    /* ── Payment picker modal ── */
+    .payPickerTitle{ font-size:18px;font-weight:1000;text-align:center;color:var(--ink);margin:0 0 3px; }
+    .payPickerSub{ font-size:13px;font-weight:700;color:#6B7280;text-align:center;margin:0 0 16px; }
+    .payGrid{ display:flex;flex-direction:column;gap:10px; }
+    .payCard{
+      display:flex;align-items:center;gap:14px;
+      padding:13px 16px;border-radius:16px;
+      border:2px solid transparent;cursor:pointer;
+      background:#FAFAFA;user-select:none;
+      transition:transform .13s,border-color .13s,box-shadow .13s;
+    }
+    .payCard:hover{ transform:translateY(-1px);box-shadow:0 8px 22px rgba(11,18,32,.10); }
+    .payCard.selected{ border-color:var(--pClr,#E4136C);background:var(--pBg,#FFF0F7);box-shadow:0 6px 18px rgba(228,19,108,.12); }
+    .payCard.selected::after{ content:"✓";font-size:14px;font-weight:900;color:var(--pClr,#E4136C);margin-left:auto;padding-left:8px; }
+    .payIconWrap{ width:52px;height:52px;border-radius:14px;flex-shrink:0;display:grid;place-items:center;overflow:hidden; }
+    .payLabel{ font-size:15px;font-weight:900;color:var(--ink);line-height:1.2; }
+    .paySub{ font-size:11px;font-weight:700;color:#9CA3AF;margin-top:2px; }
 
     /* ── Toggle switch ── */
     .toggle{display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0;}
@@ -577,6 +636,7 @@
       <section class="screen active" id="screen-landing" aria-label="Landing">
         <div class="landing">
           <button class="btn-start" id="btn-start">খেলা শুরু করি</button>
+          <button class="btn-leaderboard-landing" id="btn-landing-lb">🏆 Leaderboard দেখো</button>
         </div>
       </section>
 
@@ -788,9 +848,10 @@
             <div style="height:4px;"></div>
             <div class="setCardSubtitle">Category Play Count</div>
             <div class="catBarList" id="catBarList"></div>
-            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <p class="tiny" style="margin-top:12px;color:#6B7280;">Export includes: Summary, Leaderboard, Play History, Category &amp; Mall Performance, Player Rankings, Game Config, Settings — 8 sheets total.</p>
+            <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
               <button class="btn ghost" id="btn-reset-stats" style="font-size:12px;padding:9px 12px;">🗑️ Reset Stats</button>
-              <button class="btn secondary" id="btn-dl-excel" style="font-size:12px;padding:9px 12px;">📥 Export Excel</button>
+              <button class="btn secondary" id="btn-dl-excel" style="font-size:12px;padding:9px 12px;">📥 Export Excel (8 sheets)</button>
             </div>
           </div>
 
@@ -815,7 +876,19 @@
             </div>
           </div>
 
-          <!-- 7. Game Data JSON -->
+          <!-- 7. Payment Method Stats -->
+          <div class="setCard">
+            <div class="setCardTitle">💳 Payment Method Usage</div>
+            <div class="catBarList" id="payBarList"></div>
+          </div>
+
+          <!-- 8. Mall Play Stats -->
+          <div class="setCard">
+            <div class="setCardTitle">🏬 Mall Play Count</div>
+            <div class="catBarList" id="mallBarList"></div>
+          </div>
+
+          <!-- 8. Game Data JSON -->
           <div class="setCard">
             <div class="setCardTitle">📦 Game Data <span style="font-weight:700;color:#9CA3AF;font-size:11px;">JSON — categories &amp; items</span></div>
             <textarea id="set-data" style="width:100%;min-height:200px;resize:vertical;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px;font-size:11px;font-family:monospace;line-height:1.4;outline:none;background:#FAFAFA;"></textarea>
@@ -884,6 +957,36 @@
         </div>
       </div>
 
+      <!-- Mall Picker Modal -->
+      <div class="backdrop" id="modal-mall" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <p class="mallPickerTitle">🏬 কোন মলে যাবে?</p>
+            <p class="mallPickerSub">একটি শপিং মল বেছে নাও</p>
+            <div class="mallGrid" id="mallGrid"><!-- JS fills --></div>
+          </div>
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-mall-cancel">ফিরে যাই</button>
+            <button class="btn" id="btn-mall-next" disabled>এগিয়ে যাও →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method Modal -->
+      <div class="backdrop" id="modal-pay" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modalSkin">
+            <p class="payPickerTitle">💳 পেমেন্ট কীভাবে করবে?</p>
+            <p class="payPickerSub">একটি পেমেন্ট পদ্ধতি বেছে নাও</p>
+            <div class="payGrid" id="payGrid"><!-- JS fills --></div>
+          </div>
+          <div class="modalActions">
+            <button class="btn ghost" id="btn-pay-cancel">ফিরে যাই</button>
+            <button class="btn" id="btn-pay-next" disabled>এগিয়ে যাও →</button>
+          </div>
+        </div>
+      </div>
+
       <div class="backdrop" id="modal-brief" aria-hidden="true">
         <div class="modal" role="dialog" aria-modal="true">
           <!-- Hero header — JS sets --bClr1/2/--bAccent inline -->
@@ -898,10 +1001,7 @@
           <div class="briefBody">
             <div class="briefSectionLbl" id="briefItemsHdr">এগুলো খুঁজে বের করো</div>
             <div class="briefRow" id="briefItems"></div>
-            <div class="briefTip" id="briefTip">
-              <div class="briefTipIcon">💡</div>
-              <div class="briefTipText" id="briefTipText"></div>
-            </div>
+
           </div>
           <!-- hidden legacy refs -->
           <div id="briefStats" style="display:none"></div>
@@ -919,7 +1019,7 @@
           <div class="modalSkin">
             <h3 class="mTitle">🏆 Leaderboard</h3>
             <p class="mText" style="margin-bottom:14px;">সেরা জয়ের রেকর্ড</p>
-            <div id="lbList" style="max-height:340px;overflow-y:auto;"></div>
+            <div id="lbList" style="max-height:min(60vh,420px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;"></div>
           </div>
           <div class="modalActions one">
             <button class="btn ghost" id="btn-lb-close">বন্ধ করো</button>
@@ -947,11 +1047,7 @@
               <div class="resStatVal" id="resLivesUsed">—</div>
               <div class="resStatLbl">Mistakes</div>
             </div>
-            <div class="resStatDiv"></div>
-            <div class="resStatTile" id="resBadge">
-              <div class="resStatVal">—</div>
-              <div class="resStatLbl">Win Rate</div>
-            </div>
+
           </div>
           <!-- Buttons injected by finish() -->
           <div class="resActions" id="resActions"></div>
@@ -999,6 +1095,152 @@
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const shuffle=(arr)=>{ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
   
+  function getMallSvg(id, size=72){
+    // 8-bit pixel-art style building SVGs for each mall
+    const s = size;
+    switch(id){
+      case "bashundhara": // tall modern multi-storey city mall — blue
+        return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <!-- sky bg -->
+          <rect width="64" height="64" fill="#DBEAFE"/>
+          <!-- main building body -->
+          <rect x="10" y="14" width="44" height="42" fill="#1D4ED8"/>
+          <!-- glass facade grid — rows -->
+          <rect x="14" y="18" width="8" height="6" fill="#93C5FD"/><rect x="24" y="18" width="8" height="6" fill="#93C5FD"/><rect x="34" y="18" width="8" height="6" fill="#93C5FD"/><rect x="44" y="18" width="8" height="6" fill="#93C5FD"/>
+          <rect x="14" y="26" width="8" height="6" fill="#60A5FA"/><rect x="24" y="26" width="8" height="6" fill="#93C5FD"/><rect x="34" y="26" width="8" height="6" fill="#60A5FA"/><rect x="44" y="26" width="8" height="6" fill="#93C5FD"/>
+          <rect x="14" y="34" width="8" height="6" fill="#93C5FD"/><rect x="24" y="34" width="8" height="6" fill="#60A5FA"/><rect x="34" y="34" width="8" height="6" fill="#93C5FD"/><rect x="44" y="34" width="8" height="6" fill="#60A5FA"/>
+          <rect x="14" y="42" width="8" height="6" fill="#60A5FA"/><rect x="24" y="42" width="8" height="6" fill="#93C5FD"/><rect x="34" y="42" width="8" height="6" fill="#60A5FA"/><rect x="44" y="42" width="8" height="6" fill="#93C5FD"/>
+          <!-- roof accent -->
+          <rect x="10" y="12" width="44" height="4" fill="#1E3A8A"/>
+          <rect x="16" y="8"  width="32" height="4" fill="#1D4ED8"/>
+          <rect x="22" y="4"  width="20" height="4" fill="#1E3A8A"/>
+          <!-- entrance door -->
+          <rect x="24" y="50" width="16" height="6" fill="#1E40AF"/>
+          <rect x="27" y="52" width="4" height="4" fill="#BFDBFE"/>
+          <rect x="33" y="52" width="4" height="4" fill="#BFDBFE"/>
+          <!-- ground -->
+          <rect x="0" y="56" width="64" height="8" fill="#93C5FD"/>
+          <rect x="0" y="58" width="64" height="6" fill="#BFDBFE"/>
+          <!-- sign -->
+          <rect x="18" y="10" width="28" height="3" fill="#FCD34D"/>
+          <!-- tiny flag -->
+          <rect x="30" y="0" width="2" height="6" fill="#374151"/>
+          <rect x="32" y="1" width="6" height="4" fill="#EF4444"/>
+        </svg>`;
+
+      case "jamuna": // wide mall with green dome — emerald
+        return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <rect width="64" height="64" fill="#D1FAE5"/>
+          <!-- wide building base -->
+          <rect x="4"  y="28" width="56" height="28" fill="#059669"/>
+          <!-- central dome (arc-ish in pixel) -->
+          <rect x="22" y="18" width="20" height="12" fill="#047857"/>
+          <rect x="24" y="14" width="16" height="6"  fill="#059669"/>
+          <rect x="26" y="10" width="12" height="6"  fill="#047857"/>
+          <rect x="28" y="6"  width="8"  height="6"  fill="#059669"/>
+          <rect x="30" y="4"  width="4"  height="4"  fill="#6EE7B7"/>
+          <!-- windows row 1 -->
+          <rect x="8"  y="32" width="8" height="6" fill="#6EE7B7"/><rect x="20" y="32" width="8" height="6" fill="#6EE7B7"/><rect x="36" y="32" width="8" height="6" fill="#6EE7B7"/><rect x="48" y="32" width="8" height="6" fill="#6EE7B7"/>
+          <!-- windows row 2 -->
+          <rect x="8"  y="40" width="8" height="6" fill="#A7F3D0"/><rect x="20" y="40" width="8" height="6" fill="#6EE7B7"/><rect x="36" y="40" width="8" height="6" fill="#A7F3D0"/><rect x="48" y="40" width="8" height="6" fill="#6EE7B7"/>
+          <!-- entrance -->
+          <rect x="26" y="48" width="12" height="8" fill="#065F46"/>
+          <rect x="28" y="50" width="3" height="6" fill="#6EE7B7"/>
+          <rect x="33" y="50" width="3" height="6" fill="#6EE7B7"/>
+          <!-- ground -->
+          <rect x="0" y="56" width="64" height="8" fill="#6EE7B7"/>
+          <!-- decorative trees (2px pixel) -->
+          <rect x="0" y="46" width="4" height="10" fill="#047857"/>
+          <rect x="60" y="46" width="4" height="10" fill="#047857"/>
+          <rect x="0" y="40" width="4" height="8" fill="#059669"/>
+          <rect x="60" y="40" width="4" height="8" fill="#059669"/>
+          <!-- sign -->
+          <rect x="20" y="30" width="24" height="3" fill="#FCD34D"/>
+        </svg>`;
+
+      case "finlay": // sleek premium purple-toned mall
+        return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <rect width="64" height="64" fill="#EDE9FE"/>
+          <!-- twin towers -->
+          <rect x="6"  y="20" width="20" height="36" fill="#7C3AED"/>
+          <rect x="38" y="20" width="20" height="36" fill="#7C3AED"/>
+          <!-- connector bridge -->
+          <rect x="26" y="30" width="12" height="6" fill="#6D28D9"/>
+          <!-- tower windows left -->
+          <rect x="8"  y="24" width="6" height="4" fill="#C4B5FD"/><rect x="16" y="24" width="6" height="4" fill="#C4B5FD"/>
+          <rect x="8"  y="30" width="6" height="4" fill="#A78BFA"/><rect x="16" y="30" width="6" height="4" fill="#C4B5FD"/>
+          <rect x="8"  y="36" width="6" height="4" fill="#C4B5FD"/><rect x="16" y="36" width="6" height="4" fill="#A78BFA"/>
+          <rect x="8"  y="42" width="6" height="4" fill="#A78BFA"/><rect x="16" y="42" width="6" height="4" fill="#C4B5FD"/>
+          <!-- tower windows right -->
+          <rect x="40" y="24" width="6" height="4" fill="#C4B5FD"/><rect x="48" y="24" width="6" height="4" fill="#A78BFA"/>
+          <rect x="40" y="30" width="6" height="4" fill="#A78BFA"/><rect x="48" y="30" width="6" height="4" fill="#C4B5FD"/>
+          <rect x="40" y="36" width="6" height="4" fill="#C4B5FD"/><rect x="48" y="36" width="6" height="4" fill="#A78BFA"/>
+          <rect x="40" y="42" width="6" height="4" fill="#A78BFA"/><rect x="48" y="42" width="6" height="4" fill="#C4B5FD"/>
+          <!-- rooftops -->
+          <rect x="6"  y="16" width="20" height="4" fill="#5B21B6"/>
+          <rect x="38" y="16" width="20" height="4" fill="#5B21B6"/>
+          <rect x="10" y="12" width="12" height="4" fill="#7C3AED"/>
+          <rect x="42" y="12" width="12" height="4" fill="#7C3AED"/>
+          <!-- entrance -->
+          <rect x="26" y="50" width="12" height="6" fill="#5B21B6"/>
+          <rect x="28" y="51" width="3" height="5" fill="#DDD6FE"/>
+          <rect x="33" y="51" width="3" height="5" fill="#DDD6FE"/>
+          <!-- ground -->
+          <rect x="0" y="56" width="64" height="8" fill="#C4B5FD"/>
+          <!-- gold sign -->
+          <rect x="24" y="32" width="16" height="3" fill="#FCD34D"/>
+        </svg>`;
+
+      case "sanmar": // ocean-themed teal mall with wave elements
+        return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <rect width="64" height="64" fill="#CFFAFE"/>
+          <!-- main curved building -->
+          <rect x="8"  y="22" width="48" height="34" fill="#0E7490"/>
+          <!-- curved top (pixel stepped) -->
+          <rect x="14" y="18" width="36" height="4" fill="#0E7490"/>
+          <rect x="18" y="14" width="28" height="4" fill="#0891B2"/>
+          <rect x="22" y="10" width="20" height="4" fill="#0E7490"/>
+          <!-- ocean wave accent on building -->
+          <rect x="8"  y="36" width="48" height="4" fill="#0891B2"/>
+          <rect x="10" y="38" width="6"  height="2" fill="#0E7490"/>
+          <rect x="20" y="38" width="6"  height="2" fill="#0E7490"/>
+          <rect x="30" y="38" width="6"  height="2" fill="#0E7490"/>
+          <rect x="40" y="38" width="6"  height="2" fill="#0E7490"/>
+          <!-- windows -->
+          <rect x="12" y="26" width="8" height="6" fill="#67E8F9"/><rect x="24" y="26" width="8" height="6" fill="#A5F3FC"/><rect x="36" y="26" width="8" height="6" fill="#67E8F9"/><rect x="48" y="26" width="6" height="6" fill="#A5F3FC"/>
+          <rect x="12" y="42" width="8" height="6" fill="#A5F3FC"/><rect x="24" y="42" width="8" height="6" fill="#67E8F9"/><rect x="36" y="42" width="8" height="6" fill="#A5F3FC"/><rect x="48" y="42" width="6" height="6" fill="#67E8F9"/>
+          <!-- entrance -->
+          <rect x="26" y="50" width="12" height="6" fill="#164E63"/>
+          <rect x="28" y="51" width="4" height="5" fill="#A5F3FC"/>
+          <rect x="33" y="51" width="3" height="5" fill="#67E8F9"/>
+          <!-- ocean waves ground -->
+          <rect x="0"  y="56" width="64" height="8" fill="#06B6D4"/>
+          <rect x="0"  y="58" width="8"  height="2" fill="#0891B2"/>
+          <rect x="14" y="58" width="8"  height="2" fill="#0891B2"/>
+          <rect x="28" y="58" width="8"  height="2" fill="#0891B2"/>
+          <rect x="42" y="58" width="8"  height="2" fill="#0891B2"/>
+          <rect x="56" y="58" width="8"  height="2" fill="#0891B2"/>
+          <!-- sun -->
+          <rect x="52" y="4" width="8" height="8" fill="#FCD34D"/>
+          <rect x="50" y="6" width="2" height="4" fill="#FCD34D"/>
+          <rect x="60" y="6" width="2" height="4" fill="#FCD34D"/>
+          <rect x="54" y="2" width="4" height="2" fill="#FCD34D"/>
+          <rect x="54" y="12" width="4" height="2" fill="#FCD34D"/>
+          <!-- sign -->
+          <rect x="18" y="24" width="28" height="3" fill="#FCD34D"/>
+        </svg>`;
+
+      default:
+        return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <rect width="64" height="64" fill="#F3F4F6"/>
+          <rect x="12" y="20" width="40" height="36" fill="#9CA3AF"/>
+          <rect x="24" y="48" width="16" height="8" fill="#6B7280"/>
+          <rect x="16" y="26" width="8" height="8" fill="#D1D5DB"/><rect x="28" y="26" width="8" height="8" fill="#D1D5DB"/><rect x="40" y="26" width="8" height="8" fill="#D1D5DB"/>
+          <rect x="16" y="38" width="8" height="8" fill="#D1D5DB"/><rect x="28" y="38" width="8" height="8" fill="#D1D5DB"/><rect x="40" y="38" width="8" height="8" fill="#D1D5DB"/>
+        </svg>`;
+    }
+  }
+
   function getCategorySvg(id, size=80){
     // Returns a rich illustrated SVG for each category character
     switch(id){
@@ -1538,10 +1780,10 @@
   const now=()=>performance.now();
 
   // v11: clear stale localStorage so password defaults are clean
-  (function(){ const VER="eid_v15"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
+  (function(){ const VER="eid_v19"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
   const KEYS = { settings:"eid_shop_settings_prod", stats:"eid_shop_stats_prod", data:"eid_shop_data_prod" };
   const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal" };
-  const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{} };
+  const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{}, mallPlays:{}, payPlays:{} };
 
   // Sprite positions in the sheet (8x4 tiles, 128px each)
   const SPR_INDEX = {
@@ -1554,32 +1796,64 @@
 
   const defaultData = {
     landingSub: "ঈদের সেরা শপিং চ্যালেঞ্জ!",
+    paymentMethods: [
+      { id:"bkash_pay",      label:"bKash দিয়ে পেমেন্ট",       sub:"সরাসরি bKash ওয়ালেট থেকে",    color:"#ef8857", bg:"#FEF3EB" },
+      { id:"bkash_addmoney", label:"bKash দিয়ে Add Money করে", sub:"আগে Add Money, তারপর পেমেন্ট", color:"#8c4396", bg:"#F3E8F7" },
+      { id:"bkash_paylater", label:"bKash Pay Later করে",       sub:"কিনুন এখন, দিন পরে",           color:"#E4136C", bg:"#FFF0F7" },
+      { id:"cash",           label:"নগদ টাকায়",                 sub:"হাতে-নাতে ক্যাশ পেমেন্ট",     color:"#059669", bg:"#ECFDF5" }
+    ],
+    malls: [
+      { id:"bashundhara", name:"বসুন্ধরা সিটি",          tagline:"ঢাকার সবচেয়ে বড় মল!", floors:8, color:"#1D4ED8", bg:"#EFF6FF" },
+      { id:"jamuna",      name:"যমুনা ফিউচার পার্ক",     tagline:"বিশাল পার্কিং, অনেক ব্র্যান্ড!", floors:7, color:"#059669", bg:"#ECFDF5" },
+      { id:"finlay",      name:"ফিনলে স্কোয়ার",          tagline:"প্রিমিয়াম শপিং এক্সপেরিয়েন্স!", floors:6, color:"#7C3AED", bg:"#F5F3FF" },
+      { id:"sanmar",      name:"স্যানমার ওশান সিটি",     tagline:"সমুদ্রের কাছে শপিং মল!", floors:5, color:"#0E7490", bg:"#ECFEFF" }
+    ],
     categories: [
       { id:"ma",     title:"আম্মু",   hero:"ma",
         tagline:"আম্মুর ঈদের কেনাকাটা",
-        description:"আম্মুকে এবার ঈদে সত্যিই বিশেষ অনুভব করাও — তাঁর পছন্দের প্রসাধনী, গয়না আর পোশাক বেছে দাও ভালোবাসা দিয়ে।",
+        descriptions:[
+          "আম্মুকে এবার ঈদে সত্যিই বিশেষ অনুভব করাও — তাঁর পছন্দের প্রসাধনী, গয়না আর পোশাক বেছে দাও ভালোবাসা দিয়ে।",
+          "আম্মু সবার জন্য কত কিছু করেন — এবার তাঁর জন্য পছন্দমতো কেনাকাটা করো!",
+          "ঈদে আম্মুকে সুন্দর দেখাতে চাও? সঠিক জিনিসগুলো বেছে নাও।"
+        ],
         hint:"পারফিউম, চুড়ি, ওড়না — মায়ের পছন্দের জিনিসগুলো চেনো?",
-        correct:["perfume","churi","scarf","lipstick","handbag"] },
+        correct:["perfume","churi","scarf","lipstick","handbag","watch","earrings"] },
       { id:"baba",   title:"বাবা",    hero:"baba",
         tagline:"বাবার ঈদের কেনাকাটা",
-        description:"বাবা সকালে হাঁটতে পছন্দ করেন, ঈদে স্মার্ট দেখাতে চান — পাঞ্জাবি, ঘড়ি আর ওয়ালেটে তাঁর ব্যক্তিত্ব ফুটে ওঠে।",
+        descriptions:[
+          "বাবা সকালে হাঁটতে পছন্দ করেন, ঈদে স্মার্ট দেখাতে চান — পাঞ্জাবি, ঘড়ি আর ওয়ালেটে তাঁর ব্যক্তিত্ব ফুটে ওঠে।",
+          "বাবার ঈদ যেন বিশেষ হয় — তাঁর পছন্দের জিনিসগুলো বেছে দাও।",
+          "ঈদে বাবাকে স্মার্ট ও সুন্দর দেখাক — সঠিক আইটেমগুলো খুঁজে নাও।"
+        ],
         hint:"পাঞ্জাবি থেকে স্যান্ডেল — বাবার ক্লাসিক ঈদ স্টাইল।",
-        correct:["panjabi","wallet","watch","belt","sandals"] },
+        correct:["panjabi","wallet","watch","belt","sandals","cap","sunglasses"] },
       { id:"bhaiya", title:"ভাইয়া",  hero:"bhaiya",
         tagline:"ভাইয়ার ঈদের কেনাকাটা",
-        description:"ভাইয়া বন্ধুদের সঙ্গে আড্ডা দেবে, ঘুরবে — কমফোর্ট আর ট্রেন্ডি স্টাইল দুটোই চাই।",
+        descriptions:[
+          "ভাইয়া বন্ধুদের সঙ্গে আড্ডা দেবে, ঘুরবে — কমফোর্ট আর ট্রেন্ডি স্টাইল দুটোই চাই।",
+          "ভাইয়ার ঈদের লুক একদম ট্রেন্ডি হোক — স্পোর্টি আর স্টাইলিশ আইটেম বেছে দাও।",
+          "ভাইয়া ঈদে কমফোর্টেবল থাকতে চায় — সঠিক কমবো বেছে নাও।"
+        ],
         hint:"ক্যাজুয়াল ও স্পোর্টি — টি-শার্ট, জিন্স, স্নিকার্স খোঁজো।",
-        correct:["tshirt","jeans","sneakers","sunglasses","cap"] },
+        correct:["tshirt","jeans","sneakers","sunglasses","cap","belt","wallet"] },
       { id:"apu",    title:"আপু",     hero:"apu",
         tagline:"আপুর ঈদের কেনাকাটা",
-        description:"আপু এবার ঈদে একটু আলাদা লুক চায় — শাড়ি, গয়না আর ব্যাগে তার সাজ পরিপূর্ণ হোক।",
+        descriptions:[
+          "আপু এবার ঈদে একটু আলাদা লুক চায় — শাড়ি, গয়না আর ব্যাগে তার সাজ পরিপূর্ণ হোক।",
+          "আপু সবসময় এলিগ্যান্ট থাকে — ঈদেও তেমন কিছু বেছে দাও।",
+          "আপুর পছন্দমতো সাজপোশাক বেছে নাও — ঈদটা তার জন্য স্পেশাল হোক।"
+        ],
         hint:"শাড়ি, কানফুল, ওড়না — আপুর এলিগ্যান্ট পছন্দ।",
-        correct:["sari","earrings","handbag","scarf","churi"] },
+        correct:["sari","earrings","handbag","scarf","churi","lipstick","perfume"] },
       { id:"own",    title:"নিজের জন্য", hero:"own",
         tagline:"নিজের ঈদের কেনাকাটা",
-        description:"এবার নিজের জন্যও কিছু একটা হোক — ঘড়ি, সানগ্লাস আর স্নিকার্সে নিজেকে একটু বিশেষ করে সাজাও এই ঈদে।",
+        descriptions:[
+          "এবার নিজের জন্যও কিছু একটা হোক — ঘড়ি, সানগ্লাস আর স্নিকার্সে নিজেকে একটু বিশেষ করে সাজাও এই ঈদে।",
+          "নিজেকে ঈদে একটু ভালোবাসো — পছন্দের আইটেমগুলো বেছে নাও।",
+          "নিজের জন্য শপিং করাও মজার — সেরা জিনিসগুলো খুঁজে বের করো।"
+        ],
         hint:"ঘড়ি, সানগ্লাস, স্নিকার্স — নিজের পছন্দের তালিকা বানাও।",
-        correct:["watch","sunglasses","sneakers","cap","chocolate"] }
+        correct:["watch","sunglasses","sneakers","cap","chocolate","tshirt","jeans"] }
     ],
     items: [
       { id:"perfume",    label:"পারফিউম" },
@@ -1612,7 +1886,7 @@
       // For data key: never let saved categories override defaultData categories
       // This ensures new categories (like "own") always appear
       if(key === KEYS.data){
-        return { ...structuredClone(fallback), ...p, categories: structuredClone(fallback.categories) };
+        return { ...structuredClone(fallback), ...p, categories: structuredClone(fallback.categories), malls: structuredClone(fallback.malls), paymentMethods: structuredClone(fallback.paymentMethods) };
       }
       return {...structuredClone(fallback), ...p}; 
     }catch(e){ return structuredClone(fallback); } 
@@ -1801,7 +2075,7 @@
         <div style="width:22px;text-align:center;font-size:15px;">${medal||"<span style='font-size:11px;color:#9CA3AF;font-family:Roboto,sans-serif;font-weight:700;'>#${i+1}</span>"}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-weight:900;font-size:13px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(w.name||"Player")}</div>
-          <div style="font-size:11px;color:#9CA3AF;font-weight:700;">${escapeHtml(w.categoryTitle||"")}</div>
+          <div style="font-size:11px;color:#9CA3AF;font-weight:700;">${escapeHtml(w.categoryTitle||"")}${w.mallName?" · "+escapeHtml(w.mallName):""}${w.paymentLabel?" · "+escapeHtml(w.paymentLabel):""}</div>
         </div>
         <div style="font-family:'Roboto',system-ui;font-weight:900;font-size:13px;color:#22c55e;">${(w.timeSec||0).toFixed(2)}s</div>
       </div>`;
@@ -1817,10 +2091,10 @@
 
   function watchLeaderboard(){
     if(!firebaseReady) return;
-    db.ref(`${publicPath()}/runs`).orderByChild("ts").limitToLast(12).on("value",(snap)=>{
+    db.ref(`${publicPath()}/runs`).orderByChild("ts").limitToLast(100).on("value",(snap)=>{
       const val=snap.val()||{};
-      const arr=Object.values(val).sort((a,b)=>(b.ts||0)-(a.ts||0));
-      const winners = arr.filter(x=>x.win).slice(0,10);
+      const arr=Object.values(val).sort((a,b)=>(a.timeSec||99)-(b.timeSec||99));
+      const winners = arr.filter(x=>x.win).slice(0,50);
       const lbHtml = buildLbHtml(winners);
       if(leaderboardEl) leaderboardEl.innerHTML = lbHtml;
       const lbList = document.getElementById("lbList");
@@ -1889,13 +2163,39 @@
 
 
   async function toggleFullscreen(){
-    try{ const root=document.documentElement; if(!document.fullscreenElement) await root.requestFullscreen(); else await document.exitFullscreen(); }catch(e){}
+    try{
+      const root = document.documentElement;
+      if(!document.fullscreenElement){
+        if(root.requestFullscreen)           await root.requestFullscreen();
+        else if(root.webkitRequestFullscreen) root.webkitRequestFullscreen();
+        else if(root.mozRequestFullScreen)    root.mozRequestFullScreen();
+        else if(root.msRequestFullscreen)     root.msRequestFullscreen();
+      } else {
+        if(document.exitFullscreen)           await document.exitFullscreen();
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if(document.mozCancelFullScreen)  document.mozCancelFullScreen();
+        else if(document.msExitFullscreen)     document.msExitFullscreen();
+      }
+    }catch(e){ console.warn("Fullscreen:", e); }
   }
 
+  function updateFsIcons(){
+    const isFs = !!document.fullscreenElement || !!document.webkitFullscreenElement;
+    const icon = isFs
+      ? `<svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m10 0h3a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m10 0h3a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+    document.querySelectorAll(".iconBtn[aria-label='Fullscreen']").forEach(b=>{ b.innerHTML = icon; });
+  }
+  document.addEventListener("fullscreenchange",      updateFsIcons);
+  document.addEventListener("webkitfullscreenchange", updateFsIcons);
+  document.addEventListener("mozfullscreenchange",    updateFsIcons);
+
   function renderMenu(){
-    // Toggle leaderboard button visibility
+    // Toggle leaderboard button visibility (menu topbar + landing)
     const lbBtn = document.getElementById("btn-leaderboard");
     if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
+    const lbLanding = document.getElementById("btn-landing-lb");
+    if(lbLanding) lbLanding.style.display = settings.showLeaderboard ? "" : "none";
     catGrid.innerHTML="";
     (data.categories||[]).forEach((cat,i)=>{
       const card = el("div", {class:"catCard", role:"button", tabindex:"0"});
@@ -1905,7 +2205,8 @@
       hero.innerHTML = getCategorySvg(cat.id, 100);
       const meta = el("div", {class:"catMeta"});
       meta.appendChild(el("p", {class:"h", html: cat.title||""}));
-      meta.appendChild(el("p", {class:"d", html: cat.description||""}));
+      const _cardDesc = (cat.descriptions && cat.descriptions[0]) || cat.description || "";
+      meta.appendChild(el("p", {class:"d", html: _cardDesc}));
       // "own" category gets a special YOU badge
       if(cat.id === "own"){
         const ownBadge = el("div", {class:"ownBadge"});
@@ -1914,7 +2215,7 @@
       };
       card.appendChild(hero);
       card.appendChild(meta);
-      const go=()=>{ AudioSvc.click(); openBrief(cat); };
+      const go=()=>{ AudioSvc.click(); openMallPicker(cat); };
       card.addEventListener("click", go);
       card.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") go(); });
       catGrid.appendChild(card);
@@ -1924,6 +2225,8 @@
   // Game state
   let playerName="Player";
   let currentCat=null;
+  let currentMall=null;
+  let currentPayment=null;
   let neededSet=new Set();
   let pickedSet=new Set();
   let livesLeft=3;
@@ -1949,9 +2252,12 @@
   }
 
   function pickNeeded(cat){
-    const pool = shuffle(cat.correct || []);
-    const n = clamp(parseInt(settings.neededCount,10)||6, 1, 12);
-    return new Set(pool.slice(0, Math.min(n, pool.length)));
+    // Always shuffle the pool so repeated plays give different item subsets
+    const pool = shuffle([...(cat.correct || [])]);
+    const requested = clamp(parseInt(settings.neededCount,10)||5, 1, 12);
+    // Pick fewer than pool size so the shuffle always matters
+    const n = Math.min(requested, pool.length);
+    return new Set(pool.slice(0, n));
   }
 
   function buildTray(needed){
@@ -1971,7 +2277,126 @@
     return {x,y};
   }
 
-  function openBrief(cat){
+  function getPaymentSvg(id){
+    switch(id){
+
+      case "bkash_pay":
+        // Exact recreation of 04-payment.svg — shopping bag, orange+peach
+        return `<svg width="52" height="52" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <rect width="200" height="200" rx="38" fill="#FEF3EB"/>
+          <polygon points="53.07 164.51 54.76 142.58 55 67.9 144.65 67.77 145.02 142.35 146.7 164.36 53.07 164.51" fill="#f7ddc6" stroke-width="0"/>
+          <path d="m151.43,142.21l-.37-74.47c-.02-3.45-2.84-6.25-6.28-6.25h-20.67c-1.13-8.6-3.72-18.79-9.58-25.33-4.12-4.6-9.23-6.93-15.21-6.93s-10.68,2.27-14.6,6.76c-5.68,6.51-8,16.8-8.9,25.51h-20.82c-3.44,0-6.26,2.8-6.28,6.25l-.37,74.47-1.68,21.81c-.13,1.74.47,3.47,1.65,4.75s2.86,2.01,4.61,2.01h93.91c1.74,0,3.42-.73,4.61-2.01,1.18-1.28,1.79-3.01,1.65-4.75l-1.68-21.81Zm-61.88-102.01c2.68-3.07,5.87-4.56,9.76-4.56,4.13,0,7.54,1.57,10.43,4.79,4.65,5.19,6.85,13.62,7.88,21.06h-35.36c.82-7.55,2.78-16.13,7.29-21.29Zm-36.49,124.31l1.69-21.93.25-74.68,20.37-.03c-.1,2.58-.09,4.81-.05,6.47-1.16.93-1.92,2.35-1.92,3.95,0,2.81,2.28,5.1,5.1,5.1s5.1-2.28,5.1-5.1c0-1.57-.73-2.97-1.85-3.9-.04-1.59-.05-3.86.06-6.53l36.48-.05c.19,2.78.24,5.14.24,6.75-1.01.93-1.66,2.26-1.66,3.74,0,2.81,2.28,5.1,5.1,5.1s5.1-2.28,5.1-5.1c0-1.7-.84-3.19-2.11-4.12,0-1.63-.05-3.83-.22-6.38l19.93-.03.37,74.59,1.68,22.01-93.63.15Z" fill="#ef8857" stroke-width="0"/>
+        </svg>`;
+
+      case "bkash_addmoney":
+        // Exact recreation of 05-add-money.svg — wallet with + sign, purple
+        return `<svg width="52" height="52" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <rect width="200" height="200" rx="38" fill="#F3E8F7"/>
+          <path d="m140.63,89.38c3.98-4,9.28-6.2,14.93-6.2h3.46v-18.43c0-.21-.17-.37-.37-.37H53.2v29.27c-13.89,2.41-24.46,14.48-24.46,29.06,0,16.3,13.22,29.52,29.52,29.52,9.89,0,18.63-4.88,23.98-12.35h76.39c.21,0,.37-.17.37-.37v-14.1h-3.99s0,0-.01,0c-5.49,0-10.65-2.14-14.54-6.02-3.89-3.89-6.03-9.05-6.03-14.55v-.46c0-5.68,2.2-11,6.18-15Z" fill="#dfcee5" stroke-width="0"/>
+          <path d="m168.44,47.86H53.58c-3.47,0-6.29,2.82-6.29,6.29v7.04c0,.08,0,.16,0,.24s0,.16,0,.24v30.51c-12.51,4.52-21.5,16.48-21.5,30.53,0,17.91,14.57,32.48,32.48,32.48,8.89,0,16.95-3.59,22.82-9.4h77.56c3.47,0,6.29-2.82,6.29-6.29v-20.01h-9.91s0,0,0,0c-3.91,0-7.59-1.52-10.36-4.29-2.77-2.77-4.3-6.45-4.3-10.37v-.46c0-4.1,1.58-7.94,4.46-10.83,2.87-2.87,6.68-4.46,10.74-4.46h9.37v-24.34c0-3.47-2.82-6.29-6.29-6.29H53.2v-4.32c0-.21.17-.37.37-.37h114.86c.21,0,.37.17.37.37v36.24l-2.59,2.27h-9.88c-6.57,0-11.92,5.22-11.92,11.64s5.35,11.64,11.92,11.64h9.04l3.43-2.66v22.94c0,1.63,1.32,2.96,2.96,2.96s2.96-1.32,2.96-2.96V54.15c0-3.47-2.82-6.29-6.29-6.29Zm-110.17,101.41c-14.65,0-26.56-11.92-26.56-26.56s11.92-26.56,26.56-26.56,26.56,11.92,26.56,26.56-11.92,26.56-26.56,26.56Zm100.38-84.89c.21,0,.37.17.37.37v18.43h-3.46c-5.64,0-10.94,2.2-14.93,6.2-3.99,4-6.18,9.33-6.18,15v.46c0,5.49,2.14,10.66,6.03,14.55,3.89,3.88,9.05,6.02,14.54,6.02h4s0,14.1,0,14.1c0,.21-.17.37-.37.37h-72.86c3.12-4.99,4.96-10.86,4.96-17.17,0-17.91-14.57-32.48-32.48-32.48-1.73,0-3.41.17-5.06.44v-26.28h105.44Z" fill="#8c4396" stroke-width="0"/>
+          <path d="m76.95,119.75h-15.79v-15.79c0-1.63-1.32-2.96-2.96-2.96s-2.96,1.32-2.96,2.96v15.79h-15.79c-1.63,0-2.96,1.32-2.96,2.96s1.32,2.96,2.96,2.96h15.79v15.79c0,1.63,1.32,2.96,2.96,2.96s2.96-1.32,2.96-2.96v-15.79h15.79c1.63,0,2.96-1.32,2.96-2.96s-1.32-2.96-2.96-2.96Z" fill="#8c4396" stroke-width="0"/>
+          <circle cx="156.16" cy="104.25" r="6.31" fill="#dfcde4" stroke-width="0"/>
+        </svg>`;
+
+      case "bkash_paylater":
+        // Faithful recreation of the screenshot: hot-pink bg, circular arrow ring (dashed),
+        // white clock face, clock hands, arrow tip on the ring
+        return `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Hot-pink background, rounded square -->
+          <rect width="52" height="52" rx="14" fill="#E4136C"/>
+          <!-- Outer dashed circular arrow ring — slightly open at top-right -->
+          <!-- Main arc ~300° going clockwise, thick white stroke -->
+          <path d="M26 8 A18 18 0 1 1 40.7 35.7" stroke="white" stroke-width="3.5" stroke-linecap="round"
+                fill="none" stroke-dasharray="4 3.2"/>
+          <!-- Arrowhead at end of arc (top-right area, pointing clockwise / downward) -->
+          <polyline points="37,31 40.7,35.7 36.2,37.8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Clock face — white filled circle -->
+          <circle cx="26" cy="26" r="13" fill="white"/>
+          <!-- Clock centre dot -->
+          <circle cx="26" cy="26" r="1.8" fill="#E4136C"/>
+          <!-- Hour hand — pointing ~10 o'clock -->
+          <line x1="26" y1="26" x2="21" y2="19.5" stroke="#E4136C" stroke-width="2.4" stroke-linecap="round"/>
+          <!-- Minute hand — pointing ~2 o'clock / right -->
+          <line x1="26" y1="26" x2="32" y2="21.5" stroke="#E4136C" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`;
+
+      case "cash":
+        // Green wallet with Bengali ৳ taka
+        return `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="52" height="52" rx="14" fill="#059669"/>
+          <rect x="8" y="17" width="36" height="22" rx="5" fill="white" opacity=".95"/>
+          <rect x="8" y="17" width="36" height="9"  rx="5" fill="#D1FAE5"/>
+          <rect x="8" y="22" width="36" height="4"  fill="#D1FAE5"/>
+          <circle cx="38" cy="28" r="6.5" fill="#ECFDF5" stroke="#059669" stroke-width="1.5"/>
+          <circle cx="38" cy="28" r="3.5" fill="#6EE7B7"/>
+          <text x="15" y="33" font-family="Arial,sans-serif" font-size="12" font-weight="900" fill="#059669">৳</text>
+          <rect x="15" y="34.5" width="13" height="1.5" rx=".75" fill="#A7F3D0"/>
+        </svg>`;
+      default:
+        return `<svg width="52" height="52" viewBox="0 0 52 52" fill="none"><rect width="52" height="52" rx="14" fill="#9CA3AF"/></svg>`;
+    }
+  }
+
+  function openPaymentPicker(){
+    currentPayment = null;
+    const payGrid = document.getElementById("payGrid");
+    const payNext = document.getElementById("btn-pay-next");
+    if(!payGrid){ openBriefModal(currentCat); return; }
+    payGrid.innerHTML = "";
+    const methods = (data.paymentMethods || []);
+    if(!methods.length){ openBriefModal(currentCat); return; }
+    payNext.disabled = true;
+    methods.forEach(method=>{
+      const card = document.createElement("div");
+      card.className = "payCard";
+      card.style.setProperty("--pClr", method.color||"#E4136C");
+      card.style.setProperty("--pBg",  method.bg||"#FFF0F7");
+      card.innerHTML = `<div class="payIconWrap" style="background:${method.bg||'#FFF0F7'}">${getPaymentSvg(method.id)}</div><div><div class="payLabel">${escapeHtml(method.label)}</div><div class="paySub">${escapeHtml(method.sub||"")}</div></div>`;
+      card.addEventListener("click", ()=>{
+        payGrid.querySelectorAll(".payCard").forEach(c=>c.classList.remove("selected"));
+        card.classList.add("selected");
+        currentPayment = method;
+        payNext.disabled = false;
+        AudioSvc.click();
+      });
+      payGrid.appendChild(card);
+    });
+    const modalMall = document.getElementById("modal-mall");
+    if(modalMall) closeModal(modalMall);
+    const modalPay = document.getElementById("modal-pay");
+    openModal(modalPay);
+  }
+
+  function openMallPicker(cat){
+    currentCat = cat;
+    currentMall = null;
+    const mallGrid = document.getElementById("mallGrid");
+    const mallNext = document.getElementById("btn-mall-next");
+    if(!mallGrid) { openBriefModal(cat); return; }
+    mallGrid.innerHTML = "";
+    const malls = (data.malls || []);
+    if(!malls.length){ openBriefModal(cat); return; }
+    mallNext.disabled = true;
+    malls.forEach(mall=>{
+      const card = document.createElement("div");
+      card.className = "mallCard";
+      card.style.setProperty("--mClr", mall.color||"#1D4ED8");
+      card.style.setProperty("--mBg", mall.bg||"#EFF6FF");
+      card.innerHTML = `<div class="mallPixel">${getMallSvg(mall.id,72)}</div><div class="mallName">${escapeHtml(mall.name)}</div><div class="mallTagline">${escapeHtml(mall.tagline||"")}</div>`;
+      card.addEventListener("click", ()=>{
+        mallGrid.querySelectorAll(".mallCard").forEach(c=>c.classList.remove("selected"));
+        card.classList.add("selected");
+        currentMall = mall;
+        mallNext.disabled = false;
+        AudioSvc.click();
+      });
+      mallGrid.appendChild(card);
+    });
+    const modalMall = document.getElementById("modal-mall");
+    openModal(modalMall);
+  }
+
+  function openBriefModal(cat){
     currentCat = cat;
     neededSet = pickNeeded(cat);
     pickedSet = new Set();
@@ -2004,7 +2429,9 @@
 
     // Tagline + title + description
     const tagEl = document.getElementById("briefTagline");
-    if(tagEl){ tagEl.textContent = cat.tagline || cat.title; tagEl.style.color = th.acc; }
+    const mallSuffix = currentMall ? ` · ${currentMall.name}` : "";
+    const paySuffix  = currentPayment ? ` · ${currentPayment.label}` : "";
+    if(tagEl){ tagEl.textContent = (cat.tagline || cat.title) + mallSuffix + paySuffix; tagEl.style.color = th.acc; }
 
     // Natural Bengali possessive: "রাফি, আম্মুর জন্য কেনাকাটা করো!"
     // For "own" category: "রাফি, এবার নিজের জন্য বেছে নাও!"
@@ -2016,11 +2443,11 @@
       own:    `${playerName}, এবার নিজের জন্য বেছে নাও!`,
     };
     briefTitle.textContent = titlePhrases[cat.id] || `${playerName}, কেনাকাটা শুরু করো!`;
-    briefText.textContent  = cat.description || "";
+    // Pick a random description from descriptions[] array for shuffle context
+    const descs = cat.descriptions || (cat.description ? [cat.description] : []);
+    briefText.textContent = descs.length ? descs[Math.floor(Math.random()*descs.length)] : "";
 
-    // Tip
-    const tipEl = document.getElementById("briefTipText");
-    if(tipEl) tipEl.textContent = cat.hint || ("সঠিক " + neededSet.size + "টি আইটেম বেছে নাও — ভুল ট্যাপ করলে জীবন কমে যাবে!");
+
 
     // Items header
     if(briefItemsHdr) briefItemsHdr.textContent = "এই " + neededSet.size + "টি আইটেম খুঁজে বের করো";
@@ -2037,6 +2464,8 @@
       briefItems.appendChild(chip);
     });
 
+    const _modalMall = document.getElementById("modal-mall");
+    if(_modalMall) closeModal(_modalMall);
     openModal(modalBrief);
   }
 
@@ -2211,11 +2640,7 @@
     resTime.textContent = `${tSec.toFixed(2)}s`;
     const used = (parseInt(settings.maxLives,10)||3) - livesLeft;
     resLivesUsed.textContent = String(Math.max(0,used));
-    const _badge = document.getElementById("resBadge");
-    if(_badge){
-      const wr = stats.games ? Math.round((stats.wins/stats.games)*100) : 0;
-      _badge.innerHTML = `<div class="resStatVal">${wr}%</div><div class="resStatLbl">Win Rate</div>`;
-    }
+
 
     // Action buttons — ALL paths go: result → ad banner → destination
     const _act = document.getElementById("resActions");
@@ -2239,10 +2664,20 @@
     openModal(modalResult);
 
     // public log
+    if(!stats.mallPlays) stats.mallPlays={};
+    if(currentMall?.id) stats.mallPlays[currentMall.id] = (stats.mallPlays[currentMall.id]||0)+1;
+    if(!stats.payPlays) stats.payPlays={};
+    if(currentPayment?.id) stats.payPlays[currentPayment.id] = (stats.payPlays[currentPayment.id]||0)+1;
+    saveJSON(KEYS.stats, stats);
+
     logResult({
       name: playerName,
       categoryId: currentCat?.id || "",
       categoryTitle: currentCat?.title || "",
+      mallId: currentMall?.id || "",
+      mallName: currentMall?.name || "",
+      paymentId:    currentPayment?.id    || "",
+      paymentLabel: currentPayment?.label || "",
       win: !!win,
       timeSec: tSec,
       livesUsed: Math.max(0,used)
@@ -2275,6 +2710,8 @@
     if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
     renderStatTiles();
     renderCatBars();
+    renderMallBars();
+    renderPayBars();
     renderLeaderboardInSettings();
   }
 
@@ -2294,6 +2731,7 @@
       { v: avgTime+"s",            k:"Avg Time",        cls:"" },
       { v: best,                   k:"Best Win Time",   cls:"green" },
       { v: Object.keys(st.catPlays||{}).length||0, k:"Categories Used", cls:"blue" },
+      { v: Object.keys(st.mallPlays||{}).length||0, k:"Malls Visited",   cls:"blue" },
     ];
     g.innerHTML = tiles.map(t=>`
       <div class="statTile ${t.cls}">
@@ -2306,16 +2744,61 @@
     const el = document.getElementById("catBarList");
     if(!el) return;
     const cp = stats.catPlays||{};
-    const cats = (data.categories||[]);
+    const cats = [...(data.categories||[])].sort((a,b)=>(cp[b.id]||0)-(cp[a.id]||0));
     const max = Math.max(1, ...cats.map(c=>cp[c.id]||0));
+    const total = cats.reduce((s,c)=>s+(cp[c.id]||0),0)||1;
     if(!cats.length){ el.innerHTML = '<div class="tiny">No data yet.</div>'; return; }
-    el.innerHTML = cats.map(c=>{
+    el.innerHTML = cats.map((c,i)=>{
       const n = cp[c.id]||0;
       const pct = Math.round((n/max)*100);
+      const sharePct = Math.round((n/total)*100);
+      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
       return `<div class="catBarRow">
-        <div class="catBarLabel">${escapeHtml(c.title||c.id)}</div>
+        <div class="catBarLabel">${medal} ${escapeHtml(c.title||c.id)}</div>
         <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%"></div></div>
-        <div class="catBarCount">${n}</div>
+        <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?sharePct+"%":""}</span></div>
+      </div>`;
+    }).join("");
+  }
+
+  function renderMallBars(){
+    const el = document.getElementById("mallBarList");
+    if(!el) return;
+    const mp = stats.mallPlays||{};
+    const malls = [...(data.malls||[])].sort((a,b)=>(mp[b.id]||0)-(mp[a.id]||0));
+    const max = Math.max(1, ...malls.map(m=>mp[m.id]||0));
+    const total = malls.reduce((s,m)=>s+(mp[m.id]||0),0)||1;
+    if(!malls.length){ el.innerHTML = '<div class="tiny">No malls configured.</div>'; return; }
+    el.innerHTML = malls.map((m,i)=>{
+      const n = mp[m.id]||0;
+      const pct = Math.round((n/max)*100);
+      const sharePct = Math.round((n/total)*100);
+      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
+      return `<div class="catBarRow">
+        <div class="catBarLabel">${medal} ${escapeHtml(m.name||m.id)}</div>
+        <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%;background:${m.color||'#1D4ED8'};"></div></div>
+        <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?sharePct+"%":""}</span></div>
+      </div>`;
+    }).join("");
+  }
+
+  function renderPayBars(){
+    const el = document.getElementById("payBarList");
+    if(!el) return;
+    const pp = stats.payPlays||{};
+    const methods = [...(data.paymentMethods||[])].sort((a,b)=>(pp[b.id]||0)-(pp[a.id]||0));
+    const max   = Math.max(1, ...methods.map(m=>pp[m.id]||0));
+    const total = methods.reduce((s,m)=>s+(pp[m.id]||0),0)||1;
+    if(!methods.length){ el.innerHTML='<div class="tiny">No payment data yet.</div>'; return; }
+    el.innerHTML = methods.map((m,i)=>{
+      const n = pp[m.id]||0;
+      const pct = Math.round((n/max)*100);
+      const share = Math.round((n/total)*100);
+      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
+      return `<div class="catBarRow">
+        <div class="catBarLabel">${medal} ${escapeHtml(m.label||m.id)}</div>
+        <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%;background:${m.color||'#E4136C'};"></div></div>
+        <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?share+"%":""}</span></div>
       </div>`;
     }).join("");
   }
@@ -2398,6 +2881,32 @@
   inpAdminCode && inpAdminCode.addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitAdminCode(); });
   inpName.addEventListener("keydown",(e)=>{ if(e.key==="Enter") submitName(); });
 
+  document.getElementById("btn-mall-next")?.addEventListener("click",()=>{
+    if(!currentMall) return;
+    AudioSvc.click();
+    openPaymentPicker();
+  });
+  document.getElementById("btn-mall-cancel")?.addEventListener("click",()=>{
+    AudioSvc.click();
+    const _mm = document.getElementById("modal-mall");
+    if(_mm) closeModal(_mm);
+  });
+
+  document.getElementById("btn-pay-next")?.addEventListener("click",()=>{
+    if(!currentPayment) return;
+    AudioSvc.click();
+    const _mp = document.getElementById("modal-pay");
+    if(_mp) closeModal(_mp);
+    openBriefModal(currentCat);
+  });
+  document.getElementById("btn-pay-cancel")?.addEventListener("click",()=>{
+    AudioSvc.click();
+    const _mp = document.getElementById("modal-pay");
+    if(_mp) closeModal(_mp);
+    // Go back to mall picker
+    openMallPicker(currentCat);
+  });
+
   $("#btn-brief-start").addEventListener("click", ()=>{ AudioSvc.click(); startGame(); });
   $("#btn-brief-cancel").addEventListener("click", ()=>{ AudioSvc.click(); closeModal(modalBrief); });
 
@@ -2411,12 +2920,18 @@
     openModal(modalLeaderboard);
   });
   document.getElementById("btn-lb-close")?.addEventListener("click",()=>{ AudioSvc.click(); closeModal(modalLeaderboard); });
+  document.getElementById("btn-landing-lb")?.addEventListener("click",()=>{
+    AudioSvc.click();
+    // Refresh leaderboard content from Firebase or cache
+    const lbList = document.getElementById("lbList");
+    if(lbList && leaderboardEl) lbList.innerHTML = leaderboardEl.innerHTML || buildLbHtml([]);
+    openModal(modalLeaderboard);
+  });
 
   $("#btn-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
   $("#btn-exit").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
   $("#btn-settings").addEventListener("click", ()=>{ AudioSvc.click(); openPassGate(); });
-$("#btn-fullscreen").addEventListener("click", toggleFullscreen);
-  $("#btn-game-fullscreen").addEventListener("click", toggleFullscreen);
+  document.querySelectorAll(".iconBtn[aria-label='Fullscreen']").forEach(b=>b.addEventListener("click",()=>{ AudioSvc.click(); toggleFullscreen(); }));
 
   $("#btn-settings-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
   $("#btn-exit-settings").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
@@ -2429,6 +2944,8 @@ $("#btn-fullscreen").addEventListener("click", toggleFullscreen);
     pushRemote("reset-stats");
     renderStatTiles();
     renderCatBars();
+    renderMallBars();
+    renderPayBars();
   });
 
   // Save settings + data
@@ -2474,45 +2991,245 @@ $("#btn-fullscreen").addEventListener("click", toggleFullscreen);
     show("landing");
   });
 
-  // ── Excel export ────────────────────────────────────────────
-  function downloadExcel(){
+  // ── Excel export (async — pulls Firebase runs first) ────────
+  async function downloadExcel(){
     if(typeof XLSX==="undefined"){ alert("Excel library not loaded."); return; }
-    const wb = XLSX.utils.book_new();
-    // Sheet 1: Settings
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Setting","Value"],
-      ["Time Limit (sec)", settings.timeLimit],
-      ["Items to Find",    settings.neededCount],
-      ["Mistakes Allowed", settings.maxLives],
-      ["Tray Size",        settings.traySize],
-      ["Admin Keyword",    settings.adminCode],
-    ]), "Settings");
-    // Sheet 2: Stats
-    const wr = stats.games ? Math.round((stats.wins/stats.games)*100) : 0;
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Metric","Value"],
-      ["Total Games",   stats.games||0],
-      ["Wins",          stats.wins||0],
-      ["Losses",        stats.losses||0],
-      ["Timeouts",      stats.timeouts||0],
-      ["Win Rate (%)",  wr],
-      ["Total Time (s)",(stats.totalTimeSec||0).toFixed(2)],
-      ["Best Win (s)",   stats.bestTimeSec?stats.bestTimeSec.toFixed(2):"—"],
-    ]), "Game Stats");
-    // Sheet 3: Category plays
+
+    // Pull all Firebase runs for leaderboard + play history
+    let allRuns = [];
+    if(firebaseReady){
+      try{
+        const snap = await db.ref(`${publicPath()}/runs`).orderByChild("ts").get();
+        if(snap.exists()){
+          allRuns = Object.entries(snap.val()||{}).map(([k,v])=>({_key:k,...v}))
+                         .sort((a,b)=>(a.ts||0)-(b.ts||0));
+        }
+      }catch(e){ console.warn("Export: Firebase runs fetch failed", e); }
+    }
+
+    const wb   = XLSX.utils.book_new();
+    const date = new Date().toISOString().slice(0,10);
+    const now  = new Date().toLocaleString("bn-BD",{timeZone:"Asia/Dhaka"});
+
+    // ── helper: apply header style row ──────────────────────────
+    function makeSheet(rows){
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      // bold the header row
+      const range = XLSX.utils.decode_range(ws["!ref"]||"A1");
+      for(let c=range.s.c; c<=range.e.c; c++){
+        const cell = ws[XLSX.utils.encode_cell({r:0,c})];
+        if(cell) cell.s = {font:{bold:true},fill:{fgColor:{rgb:"E2E8F0"}}};
+      }
+      return ws;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 1 — Summary Dashboard
+    // ══════════════════════════════════════════════════════════════
+    const wr = stats.games ? +(stats.wins/stats.games*100).toFixed(1) : 0;
+    const avgT = stats.games && stats.totalTimeSec ? +(stats.totalTimeSec/stats.games).toFixed(2) : 0;
+    const lossRate = stats.games ? +(stats.losses/stats.games*100).toFixed(1) : 0;
+    const timeoutRate = stats.games ? +(stats.timeouts/stats.games*100).toFixed(1) : 0;
     const cp = stats.catPlays||{};
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Category ID","Category Name","Times Played"],
-      ...(data.categories||[]).map(c=>[c.id, c.title||c.id, cp[c.id]||0])
-    ]), "Category Plays");
-    // Sheet 4: Items
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-      ["Item ID","Label"],
-      ...(data.items||[]).map(i=>[i.id, i.label||i.id])
-    ]), "Items");
-    XLSX.writeFile(wb, `eid_game_${new Date().toISOString().slice(0,10)}.xlsx`);
+    const mp = stats.mallPlays||{};
+    const topCat = (data.categories||[]).reduce((top,c)=>{ const n=cp[c.id]||0; return n>top.n?{id:c.id,title:c.title,n}:top; },{n:-1,title:"—"});
+    const topMall = (data.malls||[]).reduce((top,m)=>{ const n=mp[m.id]||0; return n>top.n?{id:m.id,name:m.name,n}:top; },{n:-1,name:"—"});
+    const winsOnly = allRuns.filter(r=>r.win);
+    const bestFB = winsOnly.length ? Math.min(...winsOnly.map(r=>r.timeSec||99)).toFixed(2) : "—";
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["🎮 Eid Shopping Game — Export Report", "", `Generated: ${now}`],
+      [],
+      ["METRIC","VALUE","NOTES"],
+      ["Export Date", date, ""],
+      ["Total Games Played", stats.games||0, "local device"],
+      ["Total Wins", stats.wins||0, ""],
+      ["Total Losses", stats.losses||0, ""],
+      ["Timeouts", stats.timeouts||0, ""],
+      ["Win Rate", wr+"%", ""],
+      ["Loss Rate", lossRate+"%", ""],
+      ["Timeout Rate", timeoutRate+"%", ""],
+      ["Avg Time / Game (s)", avgT, ""],
+      ["Best Win Time (s)", stats.bestTimeSec?+stats.bestTimeSec.toFixed(2):bestFB, ""],
+      ["Total Play Time (s)", +(stats.totalTimeSec||0).toFixed(2), ""],
+      [],
+      ["LEADERBOARD STATS","",""],
+      ["All-time Runs (Firebase)", allRuns.length, ""],
+      ["Total Firebase Wins", winsOnly.length, ""],
+      ["All-time Best Win (s)", bestFB, "from Firebase"],
+      [],
+      ["ENGAGEMENT","",""],
+      ["Most Played Category", topCat.title||topCat.id||"—", `${topCat.n} plays`],
+      ["Most Chosen Mall", topMall.name||topMall.id||"—", `${topMall.n} plays`],
+      ["Most Used Payment", (()=>{ const pp2=stats.payPlays||{}; const top=(data.paymentMethods||[]).reduce((t,m)=>{ const n=pp2[m.id]||0; return n>t.n?{n,label:m.label}:t; },{n:-1,label:"—"}); return top.label; })(), ""],
+      ["Categories Tried", Object.keys(cp).length, `of ${(data.categories||[]).length}`],
+      ["Malls Tried", Object.keys(mp).length, `of ${(data.malls||[]).length}`],
+      [],
+      ["SETTINGS SNAPSHOT","",""],
+      ["Difficulty Preset", settings.difficultyPreset||"normal", ""],
+      ["Time Limit (s)", settings.timeLimit, "per round"],
+      ["Items to Find", settings.neededCount, "per round"],
+      ["Mistakes Allowed", settings.maxLives, "lives per round"],
+      ["Tray Size", settings.traySize, "total items shown"],
+    ]), "Summary");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 2 — Leaderboard (all Firebase wins, fastest first)
+    // ══════════════════════════════════════════════════════════════
+    const sortedWins = [...winsOnly].sort((a,b)=>(a.timeSec||99)-(b.timeSec||99));
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["RANK","PLAYER","CATEGORY","MALL","TIME (s)","LIVES USED","DATE"],
+      ...sortedWins.map((r,i)=>[
+        i+1,
+        r.name||"Player",
+        r.categoryTitle||r.categoryId||"",
+        r.mallName||r.mallId||"—",
+        r.timeSec?+r.timeSec.toFixed(2):"",
+        r.livesUsed??0,
+        r.ts ? new Date(r.ts).toLocaleString("en-BD",{timeZone:"Asia/Dhaka"}) : "",
+      ])
+    ]), "Leaderboard");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 3 — Full Play History (all runs, chronological)
+    // ══════════════════════════════════════════════════════════════
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["#","PLAYER","CATEGORY","MALL","PAYMENT","RESULT","TIME (s)","LIVES USED","DATE & TIME"],
+      ...allRuns.map((r,i)=>[
+        i+1,
+        r.name||"Player",
+        r.categoryTitle||r.categoryId||"",
+        r.mallName||r.mallId||"—",
+        r.paymentLabel||r.paymentId||"—",
+        r.win ? "✓ WIN" : "✗ LOSS",
+        r.timeSec?+r.timeSec.toFixed(2):"",
+        r.livesUsed??0,
+        r.ts ? new Date(r.ts).toLocaleString("en-BD",{timeZone:"Asia/Dhaka"}) : "",
+      ])
+    ]), "Play History");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 4 — Category Performance
+    // ══════════════════════════════════════════════════════════════
+    const cats = data.categories||[];
+    const catRows = cats.map(c=>{
+      const played = cp[c.id]||0;
+      const cWins  = allRuns.filter(r=>r.categoryId===c.id && r.win);
+      const cAll   = allRuns.filter(r=>r.categoryId===c.id);
+      const fbWR   = cAll.length ? +(cWins.length/cAll.length*100).toFixed(1) : "—";
+      const bestT  = cWins.length ? +Math.min(...cWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
+      const avgTs  = cWins.length ? +(cWins.reduce((s,r)=>s+(r.timeSec||0),0)/cWins.length).toFixed(2) : "—";
+      const shareOfPlays = (stats.games||0) ? +(played/(stats.games)*100).toFixed(1) : "—";
+      return [c.title||c.id, played, shareOfPlays+"%", fbWR+(fbWR!=="—"?"%":""), bestT, avgTs, c.correct?.length||0];
+    }).sort((a,b)=>b[1]-a[1]); // sort by plays desc
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["CATEGORY","LOCAL PLAYS","% OF ALL PLAYS","FB WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","ITEM POOL SIZE"],
+      ...catRows
+    ]), "Category Performance");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 5 — Mall Performance
+    // ══════════════════════════════════════════════════════════════
+    const malls = data.malls||[];
+    const mallRows = malls.map(m=>{
+      const played   = mp[m.id]||0;
+      const mAll     = allRuns.filter(r=>r.mallId===m.id);
+      const mWins    = mAll.filter(r=>r.win);
+      const fbWR     = mAll.length ? +(mWins.length/mAll.length*100).toFixed(1) : "—";
+      const bestT    = mWins.length ? +Math.min(...mWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
+      const share    = Object.values(mp).reduce((s,v)=>s+v,0)||1;
+      const sharePct = +(played/share*100).toFixed(1);
+      return [m.name||m.id, m.tagline||"", played, sharePct+"%", mAll.length, fbWR+(fbWR!=="—"?"%":""), bestT, m.floors||""];
+    }).sort((a,b)=>b[2]-a[2]);
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["MALL","TAGLINE","LOCAL PLAYS","% OF MALL PLAYS","FB TOTAL RUNS","FB WIN RATE","BEST WIN TIME (s)","FLOORS"],
+      ...mallRows
+    ]), "Mall Performance");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 6 — Player Rankings (unique players from Firebase)
+    // ══════════════════════════════════════════════════════════════
+    const playerMap = {};
+    allRuns.forEach(r=>{
+      const n = r.name||"Player";
+      if(!playerMap[n]) playerMap[n]={name:n,plays:0,wins:0,totalT:0,bestT:99,cats:new Set(),malls:new Set()};
+      const p=playerMap[n];
+      p.plays++;
+      if(r.win){ p.wins++; p.totalT+=(r.timeSec||0); p.bestT=Math.min(p.bestT,r.timeSec||99); }
+      if(r.categoryId) p.cats.add(r.categoryId);
+      if(r.mallId) p.malls.add(r.mallId);
+    });
+    const playerRows = Object.values(playerMap)
+      .map(p=>([p.name, p.plays, p.wins, p.plays?+(p.wins/p.plays*100).toFixed(1)+"%":"0%",
+        p.wins?+p.bestT.toFixed(2):"—", p.wins?+(p.totalT/p.wins).toFixed(2):"—",
+        p.cats.size, p.malls.size]))
+      .sort((a,b)=>b[2]-a[2]);
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["PLAYER","TOTAL PLAYS","WINS","WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","CATEGORIES TRIED","MALLS TRIED"],
+      ...playerRows
+    ]), "Player Rankings");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 7 — Game Configuration (categories, items, malls)
+    // ══════════════════════════════════════════════════════════════
+    const configRows = [
+      ["=== CATEGORIES ===","",""],
+      ["Category ID","Title","Item Pool (correct items)","Tagline"],
+      ...(data.categories||[]).map(c=>[c.id, c.title||c.id, (c.correct||[]).join(", "), c.tagline||""]),
+      [],
+      ["=== ITEMS IN GAME ===","",""],
+      ["Item ID","Bengali Label",""],
+      ...(data.items||[]).map(i=>[i.id, i.label||i.id, ""]),
+      [],
+      ["=== SHOPPING MALLS ===","",""],
+      ["Mall ID","Name","Tagline","Floors","Color"],
+      ...(data.malls||[]).map(m=>[m.id, m.name||m.id, m.tagline||"", m.floors||"", m.color||""]),
+    ];
+    XLSX.utils.book_append_sheet(wb, makeSheet(configRows), "Game Config");
+
+    // ══════════════════════════════════════════════════════════════
+    // SHEET 8 — Settings
+    // ══════════════════════════════════════════════════════════════
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["SETTING","VALUE","DESCRIPTION"],
+      ["Difficulty Preset",   settings.difficultyPreset||"normal",  "easy / normal / hard / custom"],
+      ["Time Limit (s)",      settings.timeLimit,                   "seconds allowed per round"],
+      ["Items to Find",       settings.neededCount,                 "correct items player must pick"],
+      ["Mistakes Allowed",    settings.maxLives,                    "wrong taps before game over"],
+      ["Tray Size",           settings.traySize,                    "total items shown in the tray"],
+      ["Show Leaderboard",    settings.showLeaderboard?"Yes":"No",  "leaderboard button visible on menu"],
+      ["Show Item Hints",     settings.showHints?"Yes":"No",        "item names shown in brief screen"],
+      ["Admin Keyword",       settings.adminCode||"admin",          "type in name field to access settings"],
+      ["Firebase Project",    "eid-shopping-challenge",             ""],
+      ["Firebase DB Region",  "asia-southeast1",                    ""],
+      ["Export Timestamp",    now,                                  ""],
+    ]), "Settings");
+
+    // Sheet: Payment Methods Performance
+    const ppData = stats.payPlays||{};
+    const payRows2 = (data.paymentMethods||[]).map(m=>{
+      const played   = ppData[m.id]||0;
+      const pAll     = allRuns.filter(r=>r.paymentId===m.id);
+      const pWins    = pAll.filter(r=>r.win);
+      const fbWR     = pAll.length ? +(pWins.length/pAll.length*100).toFixed(1) : "—";
+      const bestT    = pWins.length ? +Math.min(...pWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
+      const shareT   = Object.values(ppData).reduce((s,v)=>s+v,0)||1;
+      const sharePct = +(played/shareT*100).toFixed(1);
+      return [m.label||m.id, m.sub||"", played, sharePct+"%", pAll.length, fbWR+(fbWR!=="—"?"%":""), bestT];
+    }).sort((a,b)=>b[2]-a[2]);
+    XLSX.utils.book_append_sheet(wb, makeSheet([
+      ["PAYMENT METHOD","DESCRIPTION","LOCAL USES","% OF PAYMENT USES","FB TOTAL RUNS","FB WIN RATE","BEST WIN TIME (s)"],
+      ...payRows2
+    ]), "Payment Methods");
+
+    XLSX.writeFile(wb, `eid_game_export_${date}.xlsx`);
+    alert(`✅ Export হয়েছে! ${8} sheets সহ eid_game_export_${date}.xlsx`);
   }
-  document.getElementById("btn-dl-excel")?.addEventListener("click",()=>{ AudioSvc.click(); downloadExcel(); });
+  document.getElementById("btn-dl-excel")?.addEventListener("click",()=>{
+    AudioSvc.click();
+    const btn = document.getElementById("btn-dl-excel");
+    if(btn){ btn.disabled=true; btn.textContent="⏳ Preparing..."; }
+    downloadExcel().finally(()=>{ if(btn){ btn.disabled=false; btn.textContent="📥 Export Excel"; } });
+  });
 
   function init(){ renderMenu(); syncSettingsUI(); show("landing"); initFirebase(); }
   init();
