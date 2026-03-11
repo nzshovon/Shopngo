@@ -972,7 +972,7 @@
                   <option value="">বয়স বেছে নাও *</option>
                   <option value="18-24">১৮–২৪</option>
                   <option value="25-30">২৫–৩০</option>
-                  <option value="30-40">৩০–৪০</option>
+                  <option value="31-40">৩১–৪০</option>
                   <option value="40+">৪০+</option>
                 </select>
               </div>
@@ -1840,7 +1840,7 @@
   const now=()=>performance.now();
 
   // v11: clear stale localStorage so password defaults are clean
-  (function(){ const VER="eid_v31"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
+  (function(){ const VER="eid_v32"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
   const KEYS = { settings:"eid_shop_settings_prod", stats:"eid_shop_stats_prod", data:"eid_shop_data_prod" };
   const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal", showRank:true, lbCount:10 };
   const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{}, mallPlays:{}, payPlays:{} };
