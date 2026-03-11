@@ -386,7 +386,7 @@
     /* keep legacy classes working for other modals */
     .resultBadge{display:none;}
     .modalSkin{padding:22px 20px 14px;position:relative;overflow:hidden;}
-    .mTitle{margin:0;font-size:21px;font-weight:1000;text-align:center;letter-spacing:-.02em;color:rgba(11,18,32,.92);}
+    .mTitle{margin:0;font-size:21px;font-weight:1000;text-align:center;letter-spacing:-.02em;color:rgba(11,18,32,.92);font-family:"Hind Siliguri",system-ui,sans-serif;}
     .mText{margin:8px 0 0;font-size:14px;font-weight:900;color:#4B5563;text-align:center;line-height:1.4;}
 
     /* ── Brief modal redesign ── */
@@ -418,7 +418,7 @@
     }
     .briefHeroTitle{
       position:relative;z-index:1;
-      font-size:22px;font-weight:1000;letter-spacing:-.02em;
+      font-size:25px;font-weight:1000;letter-spacing:-.02em;
       color:var(--ink);margin:0 0 8px;
     }
     .briefDesc{
@@ -426,23 +426,33 @@
       font-size:13px;font-weight:700;color:#6B7280;
       line-height:1.5;margin:0;padding:0 4px;
     }
-    .briefBody{ padding:16px 18px 4px; }
+    .briefBody{
+      padding:20px 20px 6px;
+      background:linear-gradient(180deg,#FAFAFA 0%,#fff 100%);
+    }
     .briefSectionLbl{
-      font-size:10px;font-weight:1000;color:#9CA3AF;text-transform:uppercase;letter-spacing:.14em;
-      font-family:"Roboto","Hind Siliguri",system-ui;margin:0 0 10px;
+      font-size:11px;font-weight:1000;color:#6B7280;text-transform:uppercase;letter-spacing:.16em;
+      font-family:"Roboto","Hind Siliguri",system-ui;margin:0 0 10px;text-align:center;
     }
-    .briefRow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+    .briefInstruction{
+      font-size:13.5px;font-weight:800;color:#1F2937;text-align:center;margin:0 0 16px;
+      font-family:"Hind Siliguri","Roboto",system-ui;line-height:1.6;
+      background:linear-gradient(135deg,rgba(228,19,108,.08),rgba(239,136,87,.10));
+      border-radius:14px;padding:12px 16px;
+      border:1.5px solid rgba(228,19,108,.18);
+    }
+    .briefRow{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:18px;justify-content:center;}
     .bItem{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:7px 10px;border-radius:12px;
-      background:#F9FAFB;border:1.5px solid var(--line);
-      font-size:12px;font-weight:900;color:var(--ink);
-      box-shadow:0 2px 8px rgba(11,18,32,.05);
-      opacity:0;animation:bItemIn .28s ease both;
-      transition:background .15s;
+      display:inline-flex;align-items:center;gap:7px;
+      padding:9px 14px;border-radius:14px;
+      background:#fff;border:2px solid rgba(228,19,108,.20);
+      font-size:13px;font-weight:900;color:var(--ink);
+      box-shadow:0 3px 12px rgba(228,19,108,.10),0 1px 4px rgba(11,18,32,.06);
+      opacity:0;animation:bItemIn .3s ease both;
+      transition:all .15s;
     }
-    .bItem:hover{background:#fff;border-color:rgba(17,24,39,.18);}
-    @keyframes bItemIn{from{opacity:0;transform:translateY(6px) scale(.93)}to{opacity:1;transform:none}}
+    .bItem:hover{background:#FFF0F7;border-color:rgba(228,19,108,.45);transform:translateY(-1px);}
+    @keyframes bItemIn{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:none}}
       display:flex;align-items:flex-start;gap:10px;
       padding:11px 13px;border-radius:14px;
       background:linear-gradient(135deg,#FFFBEB,#FEF3C7);
@@ -522,6 +532,9 @@
     .payLabel{ font-size:15px;font-weight:900;color:var(--ink);line-height:1.2; }
     .paySub{ font-size:11px;font-weight:700;color:#9CA3AF;margin-top:2px; }
 
+    /* ── Field labels ── */
+    .fieldLabel{display:block;font-size:11px;font-weight:900;color:#6B7280;margin-bottom:4px;font-family:"Roboto",system-ui;}
+
     /* ── Toggle switch ── */
     .toggle{display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0;}
     .toggle input{opacity:0;width:0;height:0;position:absolute;}
@@ -546,7 +559,8 @@
     .field label{font-size:11px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase;color:#9CA3AF;
                  font-family:"Roboto","Hind Siliguri",system-ui,sans-serif;text-align:center;}
     .input{width:100%;border:2px solid #E5E7EB;outline:none;font-size:18px;padding:14px 12px;border-radius:16px;
-           font-weight:1000;text-align:center;letter-spacing:.02em;background:#fff;}
+           font-weight:1000;text-align:center;letter-spacing:.02em;background:#fff;
+           font-family:"Hind Siliguri",system-ui,-apple-system,sans-serif;}
     .input:focus{border-color:rgba(17,24,39,.45);box-shadow:0 0 0 4px rgba(17,24,39,.12);}
     .modalActions{padding:12px 18px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     .modalActions.one{grid-template-columns:1fr;justify-items:center;}
@@ -699,10 +713,7 @@
               <div class="k">Picked</div>
               <div class="v"><span id="hud-packed">0</span> / <span id="hud-needed">0</span></div>
             </div>
-            <div class="pill">
-              <div class="k">Lives</div>
-              <div class="v"><span id="hud-lives">0</span></div>
-            </div>
+
           </div>
           <div class="navBtns">
             <button class="iconBtn" id="btn-game-fullscreen" title="Fullscreen" aria-label="Fullscreen">
@@ -839,6 +850,14 @@
               <div><div class="setLabel">Show Item Hints</div><span class="setHint">show item names in brief screen</span></div>
               <label class="toggle"><input type="checkbox" id="set-hints"/><span class="toggleSlider"></span></label>
             </div>
+            <div class="setRow">
+              <div><div class="setLabel">Show Rank on Win</div><span class="setHint">display leaderboard rank instantly after winning</span></div>
+              <label class="toggle"><input type="checkbox" id="set-showrank"/><span class="toggleSlider"></span></label>
+            </div>
+            <div class="setRow">
+              <div><div class="setLabel">Leaderboard Count</div><span class="setHint">how many top scores to show (5–100)</span></div>
+              <input class="setNum" id="set-lbcount" type="number" min="5" max="100"/>
+            </div>
           </div>
 
           <!-- 4. Statistics -->
@@ -850,15 +869,23 @@
             <div class="catBarList" id="catBarList"></div>
             <p class="tiny" style="margin-top:12px;color:#6B7280;">Export includes: Summary, Leaderboard, Play History, Category &amp; Mall Performance, Player Rankings, Game Config, Settings — 8 sheets total.</p>
             <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <button class="btn ghost" id="btn-reset-stats" style="font-size:12px;padding:9px 12px;">🗑️ Reset Stats</button>
-              <button class="btn secondary" id="btn-dl-excel" style="font-size:12px;padding:9px 12px;">📥 Export Excel (8 sheets)</button>
+              <button class="btn ghost"      id="btn-reset-stats"   style="font-size:11px;padding:9px 12px;">🗑️ Reset Game Stats</button>
+              <button class="btn secondary"  id="btn-dl-excel"       style="font-size:11px;padding:9px 12px;">📥 Full Export (Excel)</button>
+              <button class="btn ghost"      id="btn-reset-lb"       style="font-size:11px;padding:9px 12px;">🏆 Reset Leaderboard</button>
+              <button class="btn ghost"      id="btn-reset-all"      style="font-size:11px;padding:9px 12px;color:#EF4444;border-color:#FCA5A5;">💥 Reset ALL Data</button>
             </div>
           </div>
 
-          <!-- 5. Leaderboard (always visible here in settings) -->
+          <!-- 5. Leaderboard (collapsible) -->
           <div class="setCard">
-            <div class="setCardTitle">🏆 Leaderboard <span style="font-weight:700;color:#9CA3AF;font-size:11px;">top wins via Firebase</span></div>
-            <div id="leaderboard" class="tiny" style="margin-top:4px;"></div>
+            <div class="setCardTitle" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLbCollapse()" id="lbCollapseHeader">
+              🏆 Completed Players
+              <span id="lbCollapseIcon" style="font-size:12px;color:#9CA3AF;font-weight:700;">▼ Show</span>
+            </div>
+            <div id="lbCollapse" style="display:none;margin-top:10px;">
+              <div id="leaderboard" class="tiny"></div>
+              <div id="settingsLbFull" style="margin-top:8px;max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+            </div>
           </div>
 
           <!-- 6. Security -->
@@ -888,11 +915,15 @@
             <div class="catBarList" id="mallBarList"></div>
           </div>
 
-          <!-- 8. Game Data JSON -->
-          <div class="setCard">
-            <div class="setCardTitle">📦 Game Data <span style="font-weight:700;color:#9CA3AF;font-size:11px;">JSON — categories &amp; items</span></div>
-            <textarea id="set-data" style="width:100%;min-height:200px;resize:vertical;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px;font-size:11px;font-family:monospace;line-height:1.4;outline:none;background:#FAFAFA;"></textarea>
-            <p class="tiny" style="margin-top:6px;">Firebase সক্রিয় থাকলে সেভ করলেই সব ডিভাইসে সমন্বিত হবে।</p>
+          <!-- 9. Game Data JSON — separate save, does NOT block main settings save -->
+          <div class="setCard" style="border:2px solid #FEF3C7;background:linear-gradient(135deg,#FFFBEB,#FFF);">
+            <div class="setCardTitle">📦 Game Data <span style="font-weight:700;color:#F59E0B;font-size:11px;">JSON — categories &amp; items (edit separately)</span></div>
+            <p class="tiny" style="margin-bottom:8px;color:#B45309;">এই সেকশনের পরিবর্তন আলাদাভাবে সেভ করুন — উপরের সেটিংস সেভ বাটনে প্রভাব নেই।</p>
+            <textarea id="set-data" style="width:100%;min-height:200px;resize:vertical;border:1.5px solid #FCD34D;border-radius:12px;padding:10px;font-size:11px;font-family:monospace;line-height:1.4;outline:none;background:#FFFBEB;"></textarea>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button class="btn secondary" id="btn-save-gamedata" style="font-size:12px;padding:9px 16px;flex:1;">💾 Game Data সেভ করো</button>
+              <button class="btn ghost" id="btn-reset-gamedata" style="font-size:12px;padding:9px 16px;">↺ রিসেট</button>
+            </div>
           </div>
 
           <!-- Footer -->
@@ -927,13 +958,31 @@
       <div class="backdrop" id="modal-name" aria-hidden="true">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="modalSkin">
-            <h3 class="mTitle">আপনার নাম লিখুন</h3>
-
+            <h3 class="mTitle">আপনার পরিচয় দিন</h3>
             <div class="field">
-              <input class="input" id="inp-name" maxlength="24" placeholder=" " />
+              <input class="input" id="inp-name" maxlength="24" placeholder="নাম লিখুন" />
             </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+              <div class="field">
+                <select class="input" id="inp-age" style="padding:10px 10px;">
+                  <option value="">বয়স বেছে নাও *</option>
+                  <option value="18-24">১৮–২৪</option>
+                  <option value="25-30">২৫–৩০</option>
+                  <option value="30-40">৩০–৪০</option>
+                  <option value="40+">৪০+</option>
+                </select>
+              </div>
+              <div class="field">
+                <select class="input" id="inp-gender" style="padding:10px 10px;">
+                  <option value="">লিঙ্গ *</option>
+                  <option value="male">ছেলে</option>
+                  <option value="female">মেয়ে</option>
+                  <option value="prefer_not">শেয়ার করতে চাই না</option>
+                </select>
+              </div>
+            </div>
+            <div id="name-field-err" style="color:#E1106D;font-size:13px;margin-top:8px;text-align:center;min-height:18px;font-family:'Hind Siliguri',sans-serif;"></div>
           </div>
-
           <div class="modalActions">
             <button class="btn ghost" id="btn-name-cancel">ফিরে যাই</button>
             <button class="btn" id="btn-name-next">চলুন</button>
@@ -976,7 +1025,7 @@
       <div class="backdrop" id="modal-pay" aria-hidden="true">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="modalSkin">
-            <p class="payPickerTitle">💳 পেমেন্ট কীভাবে করবে?</p>
+            <p class="payPickerTitle">💳 কেনাকাটা শেষে কীভাবে পেমেন্ট করতে পছন্দ করো?</p>
             <p class="payPickerSub">একটি পেমেন্ট পদ্ধতি বেছে নাও</p>
             <div class="payGrid" id="payGrid"><!-- JS fills --></div>
           </div>
@@ -999,7 +1048,8 @@
           </div>
           <!-- Body -->
           <div class="briefBody">
-            <div class="briefSectionLbl" id="briefItemsHdr">এগুলো খুঁজে বের করো</div>
+            <div class="briefSectionLbl" id="briefItemsHdr" style="font-size:13px;font-weight:1000;color:#E4136C;letter-spacing:.08em;margin-bottom:12px;">মনে রাখো</div>
+            <div class="briefInstruction" id="briefInstruction">নিচের আইটেমগুলো মনে রাখো — পরের স্ক্রিনে এগুলো সঠিকভাবে খুঁজে বের করো। প্রতিটি ভুলের জন্য একটি করে লাইফ কাটা যাবে।</div>
             <div class="briefRow" id="briefItems"></div>
 
           </div>
@@ -1048,6 +1098,12 @@
               <div class="resStatLbl">Mistakes</div>
             </div>
 
+          </div>
+          <!-- Rank badge — shown for wins when showRank is on -->
+          <div id="resRankBadge" style="display:none;padding:12px 18px;text-align:center;border-bottom:1px solid var(--line);">
+            <div style="font-size:10px;font-weight:1000;color:#9CA3AF;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;font-family:'Hind Siliguri',Roboto,system-ui;">তোমার র‍্যাঙ্ক</div>
+            <div id="resRankVal" style="font-size:28px;font-weight:1000;color:#E4136C;font-family:'Hind Siliguri',Roboto,system-ui;line-height:1.3;"></div>
+            <div id="resRankNote" style="font-size:12px;font-weight:700;color:#6B7280;margin-top:4px;font-family:'Hind Siliguri',Roboto,system-ui;"></div>
           </div>
           <!-- Buttons injected by finish() -->
           <div class="resActions" id="resActions"></div>
@@ -1780,9 +1836,9 @@
   const now=()=>performance.now();
 
   // v11: clear stale localStorage so password defaults are clean
-  (function(){ const VER="eid_v19"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
+  (function(){ const VER="eid_v29"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
   const KEYS = { settings:"eid_shop_settings_prod", stats:"eid_shop_stats_prod", data:"eid_shop_data_prod" };
-  const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal" };
+  const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal", showRank:true, lbCount:10 };
   const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{}, mallPlays:{}, payPlays:{} };
 
   // Sprite positions in the sheet (8x4 tiles, 128px each)
@@ -1799,8 +1855,8 @@
     paymentMethods: [
       { id:"bkash_pay",      label:"bKash দিয়ে পেমেন্ট",       sub:"সরাসরি bKash ওয়ালেট থেকে",    color:"#ef8857", bg:"#FEF3EB" },
       { id:"bkash_addmoney", label:"bKash দিয়ে Add Money করে", sub:"আগে Add Money, তারপর পেমেন্ট", color:"#8c4396", bg:"#F3E8F7" },
-      { id:"bkash_paylater", label:"bKash Pay Later করে",       sub:"কিনুন এখন, দিন পরে",           color:"#E4136C", bg:"#FFF0F7" },
-      { id:"cash",           label:"নগদ টাকায়",                 sub:"হাতে-নাতে ক্যাশ পেমেন্ট",     color:"#059669", bg:"#ECFDF5" }
+      { id:"bkash_paylater", label:"bKash Pay Later করে",       sub:"কিনুন এখন, দিন পরে",           color:"#E4136C", bg:"#FFF0F7", iconBg:"#FFF0F7" },
+      { id:"cash",           label:"Cash টাকায়",                sub:"হাতে-নাতে নগদ পেমেন্ট",       color:"#059669", bg:"#ECFDF5" }
     ],
     malls: [
       { id:"bashundhara", name:"বসুন্ধরা সিটি",          tagline:"ঢাকার সবচেয়ে বড় মল!", floors:8, color:"#1D4ED8", bg:"#EFF6FF" },
@@ -1853,7 +1909,7 @@
           "নিজের জন্য শপিং করাও মজার — সেরা জিনিসগুলো খুঁজে বের করো।"
         ],
         hint:"ঘড়ি, সানগ্লাস, স্নিকার্স — নিজের পছন্দের তালিকা বানাও।",
-        correct:["watch","sunglasses","sneakers","cap","chocolate","tshirt","jeans"] }
+        correct:["watch","sunglasses","sneakers","earrings","lipstick","tshirt","scarf"] }
     ],
     items: [
       { id:"perfume",    label:"পারফিউম" },
@@ -1917,7 +1973,8 @@
   const inpAdminCode=$("#inp-admin-code");
   const inpPass=$("#inp-pass");
   const inpName=$("#inp-name");
-  const hudTimer=$("#hud-timer"), hudPacked=$("#hud-packed"), hudNeeded=$("#hud-needed"), hudLives=$("#hud-lives");
+  const hudTimer=$("#hud-timer"), hudPacked=$("#hud-packed"), hudNeeded=$("#hud-needed");
+  const hudLives={ textContent:"" }; // hud lives pill removed — stub prevents crash
   const hearts=$("#hearts");
   const tray=$("#tray"), bag=$("#bag");
   const bagTarget=$("#bagTarget");
@@ -1925,7 +1982,7 @@
   const briefTitle=$("#briefTitle"), briefText=$("#briefText"), briefNote=$("#briefNote"), briefItems=$("#briefItems");
   const briefItemsHdr=$("#briefItemsHdr");
   const resTitle=$("#resTitle"), resMsg=$("#resMsg"), resTime=$("#resTime"), resLivesUsed=$("#resLivesUsed");
-  const resBadge=$("#resBadge");
+  const resBadge=null; // element removed in v20
   const confettiCanvas=$("#confettiCanvas");
 
   // Settings UI
@@ -1989,14 +2046,21 @@
       // Fallback: use a stable local UID so per-user data still works
       if(!uid) uid = getOrCreateLocalUid();
 
+      // Test actual DB connection with a lightweight read
+      try{
+        await db.ref(".info/connected").get();
+      }catch(dbTestErr){
+        console.warn("DB test:", dbTestErr.message);
+      }
+
       firebaseReady = true;
       setSync("on","সংযুক্ত ✓");
       await pullRemote();
       watchLeaderboard();
     }catch(e){
-      console.error("Firebase init error:", e);
+      console.error("Firebase init error:", e.code||e.message||e);
       firebaseReady = false;
-      setSync("err", "অফলাইন মোড — স্থানীয়ভাবে চলছে");
+      setSync("err", "অফলাইন — " + (e.code||e.message||"unknown error").toString().slice(0,40));
     }
   }
 
@@ -2052,8 +2116,8 @@
       // Per-user bundle (settings + stats + data)
       await db.ref(`${basePath()}/bundle`).set({ settings, stats, data, updatedAt: Date.now(), reason });
       // Shared public gameConfig — admin-set settings & categories reach all players
-      if(reason === "save" || reason === "init"){
-        await db.ref(`${publicPath()}/gameConfig`).set({ settings, data, updatedAt: Date.now() });
+      if(reason === "save" || reason === "init" || reason === "finish" || reason === "reset-stats"){
+        await db.ref(`${publicPath()}/gameConfig`).set({ settings, data, stats, updatedAt: Date.now() });
       }
       setSync("on","তথ্য অনলাইনে সমন্বিত হয়েছে।");
     }catch(e){ setSync("err","Firebase সমন্বয় ব্যর্থ — স্থানীয়ভাবে সংরক্ষিত।"); }
@@ -2063,18 +2127,39 @@
     if(!firebaseReady) return;
     try{
       const ref = db.ref(`${publicPath()}/runs`).push();
-      await ref.set({...payload, ts: Date.now()});
-    }catch(e){}
+      // Explicit complete schema — every field named so Firebase stores them all
+      const record = {
+        name:          payload.name          || "",
+        age:           payload.age           || "",
+        gender:        payload.gender        || "",
+        categoryId:    payload.categoryId    || "",
+        categoryTitle: payload.categoryTitle || "",
+        mallId:        payload.mallId        || "",
+        mallName:      payload.mallName      || "",
+        paymentId:     payload.paymentId     || "",
+        paymentLabel:  payload.paymentLabel  || "",
+        win:           !!payload.win,
+        timeSec:       payload.timeSec       || 0,
+        livesUsed:     payload.livesUsed     ?? 0,
+        ts:            Date.now(),
+      };
+      await ref.set(record);
+    }catch(e){ console.warn("logResult failed:", e); }
   }
 
   function buildLbHtml(winners){
     if(!winners.length) return '<div style="color:#9CA3AF;font-size:13px;padding:8px 0;">এখনো কোনো জয় নেই — খেলো এবং প্রথম হও!</div>';
+    const rankLabels = ["🥇","🥈","🥉"];
     return winners.map((w,i)=>{
-      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+      const rank = i + 1;
+      const medal = rankLabels[i] || null;
+      const rankEl = medal
+        ? `<div style="width:28px;text-align:center;font-size:17px;">${medal}</div>`
+        : `<div style="width:28px;text-align:center;background:#F3F4F6;border-radius:6px;font-size:11px;font-weight:900;color:#6B7280;padding:3px 0;font-family:Roboto,sans-serif;">#${rank}</div>`;
       return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(17,24,39,.07);">
-        <div style="width:22px;text-align:center;font-size:15px;">${medal||"<span style='font-size:11px;color:#9CA3AF;font-family:Roboto,sans-serif;font-weight:700;'>#${i+1}</span>"}</div>
+        ${rankEl}
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:900;font-size:13px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(w.name||"Player")}</div>
+          <div style="font-weight:900;font-size:13px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(w.name||"Player")}${w.age?" ("+escapeHtml(w.age)+")":""}</div>
           <div style="font-size:11px;color:#9CA3AF;font-weight:700;">${escapeHtml(w.categoryTitle||"")}${w.mallName?" · "+escapeHtml(w.mallName):""}${w.paymentLabel?" · "+escapeHtml(w.paymentLabel):""}</div>
         </div>
         <div style="font-family:'Roboto',system-ui;font-weight:900;font-size:13px;color:#22c55e;">${(w.timeSec||0).toFixed(2)}s</div>
@@ -2091,10 +2176,11 @@
 
   function watchLeaderboard(){
     if(!firebaseReady) return;
-    db.ref(`${publicPath()}/runs`).orderByChild("ts").limitToLast(100).on("value",(snap)=>{
+    const lbCnt = Math.max(5, Math.min(100, parseInt(settings.lbCount||10,10)));
+    db.ref(`${publicPath()}/runs`).orderByChild("ts").limitToLast(500).on("value",(snap)=>{
       const val=snap.val()||{};
       const arr=Object.values(val).sort((a,b)=>(a.timeSec||99)-(b.timeSec||99));
-      const winners = arr.filter(x=>x.win).slice(0,50);
+      const winners = arr.filter(x=>x.win).slice(0,lbCnt);
       const lbHtml = buildLbHtml(winners);
       if(leaderboardEl) leaderboardEl.innerHTML = lbHtml;
       const lbList = document.getElementById("lbList");
@@ -2224,6 +2310,8 @@
 
   // Game state
   let playerName="Player";
+  let playerAge="";
+  let playerGender="";
   let currentCat=null;
   let currentMall=null;
   let currentPayment=null;
@@ -2251,11 +2339,26 @@
     hudLives.textContent = String(left);
   }
 
+  // Gender-specific item pools for "নিজের জন্য" (own) category
+  const ownPoolByGender = {
+    male:   ["watch","sunglasses","sneakers","cap","tshirt","jeans","belt","wallet","panjabi"],
+    female: ["watch","earrings","lipstick","scarf","handbag","sari","churi","perfume","tshirt"],
+    default:["watch","sunglasses","sneakers","earrings","lipstick","tshirt","scarf","jeans","cap"],
+  };
+
   function pickNeeded(cat){
-    // Always shuffle the pool so repeated plays give different item subsets
-    const pool = shuffle([...(cat.correct || [])]);
+    // For "own" category, pick pool based on player's selected gender
+    let pool;
+    if(cat.id === "own"){
+      const g = (playerGender||"").toLowerCase();
+      const genderPool = g === "male"   ? ownPoolByGender.male
+                       : g === "female" ? ownPoolByGender.female
+                       :                  ownPoolByGender.default;
+      pool = shuffle([...genderPool]);
+    } else {
+      pool = shuffle([...(cat.correct || [])]);
+    }
     const requested = clamp(parseInt(settings.neededCount,10)||5, 1, 12);
-    // Pick fewer than pool size so the shuffle always matters
     const n = Math.min(requested, pool.length);
     return new Set(pool.slice(0, n));
   }
@@ -2299,26 +2402,10 @@
         </svg>`;
 
       case "bkash_paylater":
-        // Faithful recreation of the screenshot: hot-pink bg, circular arrow ring (dashed),
-        // white clock face, clock hands, arrow tip on the ring
-        return `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Hot-pink background, rounded square -->
-          <rect width="52" height="52" rx="14" fill="#E4136C"/>
-          <!-- Outer dashed circular arrow ring — slightly open at top-right -->
-          <!-- Main arc ~300° going clockwise, thick white stroke -->
-          <path d="M26 8 A18 18 0 1 1 40.7 35.7" stroke="white" stroke-width="3.5" stroke-linecap="round"
-                fill="none" stroke-dasharray="4 3.2"/>
-          <!-- Arrowhead at end of arc (top-right area, pointing clockwise / downward) -->
-          <polyline points="37,31 40.7,35.7 36.2,37.8" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <!-- Clock face — white filled circle -->
-          <circle cx="26" cy="26" r="13" fill="white"/>
-          <!-- Clock centre dot -->
-          <circle cx="26" cy="26" r="1.8" fill="#E4136C"/>
-          <!-- Hour hand — pointing ~10 o'clock -->
-          <line x1="26" y1="26" x2="21" y2="19.5" stroke="#E4136C" stroke-width="2.4" stroke-linecap="round"/>
-          <!-- Minute hand — pointing ~2 o'clock / right -->
-          <line x1="26" y1="26" x2="32" y2="21.5" stroke="#E4136C" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>`;
+        // Official logo loaded from assets folder — no SVG recreation needed
+        return `<img src="assets/Pay-Later Bangla logo_Only.png"
+                  alt="bKash Pay Later"
+                  style="width:52px;height:52px;object-fit:contain;border-radius:14px;background:#fff;display:block;" />`;
 
       case "cash":
         // Green wallet with Bengali ৳ taka
@@ -2440,7 +2527,9 @@
       baba:   `${playerName}, বাবার জন্য কেনাকাটা করো!`,
       bhaiya: `${playerName}, ভাইয়ার জন্য কেনাকাটা করো!`,
       apu:    `${playerName}, আপুর জন্য কেনাকাটা করো!`,
-      own:    `${playerName}, এবার নিজের জন্য বেছে নাও!`,
+      own:    playerGender==="male"   ? `${playerName}, নিজেকে সাজাও!` :
+              playerGender==="female" ? `${playerName}, নিজেকে বিশেষভাবে সাজাও!` :
+                                        `${playerName}, এবার নিজের জন্য বেছে নাও!`,
     };
     briefTitle.textContent = titlePhrases[cat.id] || `${playerName}, কেনাকাটা শুরু করো!`;
     // Pick a random description from descriptions[] array for shuffle context
@@ -2450,7 +2539,7 @@
 
 
     // Items header
-    if(briefItemsHdr) briefItemsHdr.textContent = "এই " + neededSet.size + "টি আইটেম খুঁজে বের করো";
+    if(briefItemsHdr) briefItemsHdr.textContent = "এই " + neededSet.size + "টি আইটেম মনে রাখো";
 
     // Item chips
     briefItems.innerHTML = "";
@@ -2620,10 +2709,8 @@
     const ck = currentCat?.id||"unknown";
     stats.catPlays[ck] = (stats.catPlays[ck]||0)+1;
     saveJSON(KEYS.stats, stats);
-    pushRemote("finish");
 
     if(win) AudioSvc.finish(); else AudioSvc.timesUp();
-
     // Win/lose class on modal box
     const modalBox = modalResult.querySelector(".modal");
     if(modalBox){ modalBox.classList.remove("win","lose"); modalBox.classList.add(win ? "win" : "lose"); }
@@ -2632,9 +2719,13 @@
     const _emo = document.getElementById("resEmoji");
     if(_emo) _emo.textContent = win ? "🎉" : (timeout ? "⏰" : "💔");
     resTitle.textContent = win ? `দারুণ, ${playerName}!` : (timeout ? `সময় শেষ, ${playerName}!` : `আবার চেষ্টা করো, ${playerName}!`);
-    resMsg.textContent = win
-      ? "সব আইটেম সঠিকভাবে বেছে নিয়েছ! 🛒✨"
-      : (timeout ? "সময় শেষ হয়ে গেছে — একটু দ্রুত করো পরেরবার!" : "কিছু ভুল হয়েছে — তবে পরেরবার ঠিকই পারবে!");
+    if(win){
+      resMsg.textContent = `সব আইটেম সঠিকভাবে বেছে নিয়েছ! সময় লেগেছে: ${tSec.toFixed(2)} সেকেন্ড 🛒✨`;
+    } else if(timeout){
+      resMsg.textContent = "⏰ সময় শেষ হয়ে গেছে! আরও দ্রুত করো পরেরবার।";
+    } else {
+      resMsg.textContent = "💔 সব জীবন শেষ হয়ে গেছে! তবে পরেরবার ঠিকই পারবে।";
+    }
 
     // Stats strip
     resTime.textContent = `${tSec.toFixed(2)}s`;
@@ -2658,6 +2749,36 @@
       }
     }
 
+    // Show rank badge if win + showRank enabled (async Firebase lookup)
+    const rankBadge = document.getElementById("resRankBadge");
+    const rankVal   = document.getElementById("resRankVal");
+    const rankNote  = document.getElementById("resRankNote");
+    if(rankBadge){ rankBadge.style.display="none"; }
+    if(win && settings.showRank !== false && firebaseReady){
+      // async: fetch leaderboard, find rank
+      db.ref(`${publicPath()}/runs`).orderByChild("timeSec").once("value",(snap)=>{
+        // All previous winning runs (current run not yet pushed)
+        const prev = Object.values(snap.val()||{}).filter(r=>r.win);
+        // How many previous players ran FASTER than the player? That's (rank - 1)
+        const fasterCount = prev.filter(r=>(r.timeSec||999) < tSec).length;
+        const rank = fasterCount + 1;
+        // Total = previous runs + 1 (this run)
+        const total = prev.length + 1;
+        const medals = ["🥇","🥈","🥉"];
+        const medal  = medals[rank-1] || "";
+        // Bengali ordinals
+        const ordinals = {1:"১ম",2:"২য়",3:"৩য়",4:"৪র্থ",5:"৫ম",6:"৬ষ্ঠ",7:"৭ম",8:"৮ম",9:"৯ম",10:"১০ম"};
+        const ordinal = ordinals[rank] || (rank+"তম");
+        if(rankBadge && rankVal && rankNote){
+          rankBadge.style.display = "";
+          rankVal.innerHTML = medal
+            ? `<span style="font-size:28px">${medal}</span> <span style="font-size:26px">${ordinal}</span>`
+            : `<span style="font-size:26px">${ordinal}</span>`;
+          rankNote.textContent = `${total} জনের মধ্যে • তোমার সময়: ${tSec.toFixed(2)}s`;
+        }
+      });
+    }
+
     // Switch away from game screen NOW — modals float on top of landing
     show("landing");
     launchConfetti(win);
@@ -2669,9 +2790,12 @@
     if(!stats.payPlays) stats.payPlays={};
     if(currentPayment?.id) stats.payPlays[currentPayment.id] = (stats.payPlays[currentPayment.id]||0)+1;
     saveJSON(KEYS.stats, stats);
+    pushRemote("finish");
 
     logResult({
       name: playerName,
+      age:  playerAge  || "",
+      gender: playerGender || "",
       categoryId: currentCat?.id || "",
       categoryTitle: currentCat?.title || "",
       mallId: currentMall?.id || "",
@@ -2705,6 +2829,10 @@
     if(setDiff)      setDiff.value   = settings.difficultyPreset || "normal";
     if(setLb)        setLb.checked   = settings.showLeaderboard !== false;
     if(setHints)     setHints.checked = settings.showHints !== false;
+    const _setShowRank = document.getElementById("set-showrank");
+    if(_setShowRank) _setShowRank.checked = settings.showRank !== false;
+    const _setLbCount = document.getElementById("set-lbcount");
+    if(_setLbCount) _setLbCount.value = settings.lbCount || 10;
     // Show/hide leaderboard button on menu
     const lbBtn = document.getElementById("btn-leaderboard");
     if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
@@ -2752,9 +2880,8 @@
       const n = cp[c.id]||0;
       const pct = Math.round((n/max)*100);
       const sharePct = Math.round((n/total)*100);
-      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
       return `<div class="catBarRow">
-        <div class="catBarLabel">${medal} ${escapeHtml(c.title||c.id)}</div>
+        <div class="catBarLabel">${escapeHtml(c.title||c.id)}</div>
         <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%"></div></div>
         <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?sharePct+"%":""}</span></div>
       </div>`;
@@ -2773,9 +2900,8 @@
       const n = mp[m.id]||0;
       const pct = Math.round((n/max)*100);
       const sharePct = Math.round((n/total)*100);
-      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
       return `<div class="catBarRow">
-        <div class="catBarLabel">${medal} ${escapeHtml(m.name||m.id)}</div>
+        <div class="catBarLabel">${escapeHtml(m.name||m.id)}</div>
         <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%;background:${m.color||'#1D4ED8'};"></div></div>
         <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?sharePct+"%":""}</span></div>
       </div>`;
@@ -2794,16 +2920,15 @@
       const n = pp[m.id]||0;
       const pct = Math.round((n/max)*100);
       const share = Math.round((n/total)*100);
-      const medal = i===0&&n>0?"🥇":i===1&&n>0?"🥈":i===2&&n>0?"🥉":"";
       return `<div class="catBarRow">
-        <div class="catBarLabel">${medal} ${escapeHtml(m.label||m.id)}</div>
+        <div class="catBarLabel">${escapeHtml(m.label||m.id)}</div>
         <div class="catBarTrack"><div class="catBarFill" style="width:${pct}%;background:${m.color||'#E4136C'};"></div></div>
         <div class="catBarCount">${n}<span style="font-size:9px;color:#9CA3AF;margin-left:3px;">${n>0?share+"%":""}</span></div>
       </div>`;
     }).join("");
   }
 
-  function openSettings(){ syncSettingsUI(); show("settings"); }
+  function openSettings(){ syncSettingsUI(); _settingsSnapshotOnOpen = getSettingsSnapshot(); show("settings"); }
 
   function openPassGate(){ 
     AudioSvc.unlock(); 
@@ -2820,18 +2945,43 @@
     else { AudioSvc.bad(); closeModal(modalAdmin); }
   }
 
-  function openName(){ AudioSvc.unlock(); inpName.value=""; openModal(modalName); setTimeout(()=>inpName.focus(), 0); }
+  function openName(){ AudioSvc.unlock(); inpName.value=""; const _a=document.getElementById("inp-age"); if(_a) _a.value=""; const _g=document.getElementById("inp-gender"); if(_g) _g.value=""; const _e=document.getElementById("name-field-err"); if(_e) _e.textContent=""; openModal(modalName); setTimeout(()=>inpName.focus(), 0); }
 
   function submitName(){
     const name=(inpName.value||"").trim();
-    if(!name) return;
+    const errEl = document.getElementById("name-field-err");
+    const age    = (document.getElementById("inp-age")?.value||"").trim();
+    const gender = (document.getElementById("inp-gender")?.value||"").trim();
+    if(errEl) errEl.textContent = "";
+
+    // Admin shortcut — no age/gender needed
     const adminCode=(settings.adminCode||"admin").toLowerCase();
-    if(name.toLowerCase()===adminCode){
+    if(name && name.toLowerCase()===adminCode){
       closeModal(modalName);
       openPassGate();
       return;
     }
-    playerName=name;
+
+    // Validate all three fields
+    if(!name){
+      if(errEl) errEl.textContent = "নাম লিখুন।";
+      inpName.focus();
+      return;
+    }
+    if(!age){
+      if(errEl) errEl.textContent = "বয়স বেছে নাও।";
+      document.getElementById("inp-age")?.focus();
+      return;
+    }
+    if(!gender){
+      if(errEl) errEl.textContent = "লিঙ্গ বেছে নাও।";
+      document.getElementById("inp-gender")?.focus();
+      return;
+    }
+
+    playerName   = name;
+    playerAge    = age;
+    playerGender = gender;
     menuTitle.textContent = `Hi, ${playerName}!`;
     closeModal(modalName);
     show("menu");
@@ -2839,9 +2989,9 @@
 
   function submitPass(){
     const pass = (inpPass ? inpPass.value : "").trim();
-    // Always accept master password "123456" OR whatever the admin set
-    const stored = String(settings.adminPass || "").trim();
-    const isOk = pass === "123456" || (stored && pass === stored);
+    // Accept stored password only — default is "123456" but once changed, old one no longer works
+    const stored = String(settings.adminPass || "123456").trim();
+    const isOk = pass === stored;
     if(isOk){
       AudioSvc.ok();
       closeModal(modalPass);
@@ -2929,12 +3079,92 @@
   });
 
   $("#btn-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
-  $("#btn-exit").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+  $("#btn-exit").addEventListener("click", ()=>{
+    AudioSvc.click();
+    // Safely stop game if in progress — prevent delayed finish() popup
+    if(playing){
+      playing = false;
+      if(timerHandle){ clearInterval(timerHandle); timerHandle=null; }
+    }
+    show("landing");
+  });
   $("#btn-settings").addEventListener("click", ()=>{ AudioSvc.click(); openPassGate(); });
   document.querySelectorAll(".iconBtn[aria-label='Fullscreen']").forEach(b=>b.addEventListener("click",()=>{ AudioSvc.click(); toggleFullscreen(); }));
 
   $("#btn-settings-home").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
   $("#btn-exit-settings").addEventListener("click", ()=>{ AudioSvc.click(); show("landing"); });
+
+  // Collapsible leaderboard in settings
+  window.toggleLbCollapse = function(){
+    const c = document.getElementById("lbCollapse");
+    const icon = document.getElementById("lbCollapseIcon");
+    if(!c) return;
+    const open = c.style.display !== "none";
+    c.style.display = open ? "none" : "";
+    if(icon) icon.textContent = open ? "▼ Show" : "▲ Hide";
+    // Populate when opened
+    if(!open){
+      const el = document.getElementById("settingsLbFull");
+      if(el && leaderboardEl) el.innerHTML = leaderboardEl.innerHTML || buildLbHtml([]);
+    }
+  };
+
+  // Save Game Data JSON independently
+  document.getElementById("btn-save-gamedata")?.addEventListener("click",()=>{
+    const setData = document.getElementById("set-data");
+    let newData=null;
+    try{
+      newData = JSON.parse(setData?.value || "{}");
+      if(!Array.isArray(newData.items)||!Array.isArray(newData.categories)) throw new Error("schema");
+    }catch(e){ alert("JSON সঠিক নয়। items এবং categories অবশ্যই array হতে হবে।"); return; }
+    if(!confirm("Game Data আপডেট করবো? এটি সব ক্যাটাগরি ও আইটেম পরিবর্তন করবে।")) return;
+    data = { ...structuredClone(defaultData), ...newData };
+    saveJSON(KEYS.data, data);
+    buildMaps();
+    renderMenu();
+    pushRemote("save");
+    alert("✅ Game Data সেভ হয়েছে।");
+  });
+
+  document.getElementById("btn-reset-gamedata")?.addEventListener("click",()=>{
+    if(!confirm("Game Data রিসেট করবো?")) return;
+    const setData = document.getElementById("set-data");
+    if(setData) setData.value = JSON.stringify(data, null, 2);
+  });
+
+  // Reset Leaderboard (Firebase)
+  document.getElementById("btn-reset-lb")?.addEventListener("click",async()=>{
+    if(!confirm("Firebase Leaderboard মুছে দেওয়া হবে। নিশ্চিত?")) return;
+    if(!firebaseReady){ alert("Firebase সংযুক্ত নেই।"); return; }
+    try{
+      await db.ref(`${publicPath()}/runs`).remove();
+      const lbList = document.getElementById("lbList");
+      if(lbList) lbList.innerHTML = buildLbHtml([]);
+      const el = document.getElementById("settingsLbFull");
+      if(el) el.innerHTML = buildLbHtml([]);
+      alert("✅ Leaderboard মুছে ফেলা হয়েছে।");
+    }catch(e){ alert("ব্যর্থ: " + e.message); }
+  });
+
+  // Reset ALL Data
+  document.getElementById("btn-reset-all")?.addEventListener("click",async()=>{
+    if(!confirm("সম্পূর্ণ ডেটা — স্থানীয় পরিসংখ্যান, সেটিংস, এবং Firebase লিডারবোর্ড — মুছে দেওয়া হবে।\n\nএটি পূর্বাবস্থায় ফেরানো যাবে না। নিশ্চিত?")) return;
+    // Reset local
+    stats = structuredClone(defaultStats);
+    settings = structuredClone(defaultSettings);
+    data = structuredClone(defaultData);
+    saveJSON(KEYS.stats, stats);
+    saveJSON(KEYS.settings, settings);
+    saveJSON(KEYS.data, data);
+    buildMaps();
+    // Reset Firebase runs
+    if(firebaseReady){
+      try{ await db.ref(`${publicPath()}/runs`).remove(); }catch(e){}
+    }
+    pushRemote("reset-all");
+    syncSettingsUI();
+    alert("✅ সব ডেটা রিসেট হয়েছে।");
+  });
 
   // Reset stats
   document.getElementById("btn-reset-stats")?.addEventListener("click",()=>{
@@ -2948,14 +3178,27 @@
     renderPayBars();
   });
 
+  // Track which settings fields changed for confirmation
+  function getSettingsSnapshot(){
+    return {
+      time: document.getElementById("set-time")?.value,
+      needed: document.getElementById("set-needed")?.value,
+      lives: document.getElementById("set-lives")?.value,
+      traySize: document.getElementById("set-traysize")?.value,
+      diff: document.getElementById("set-difficulty")?.value,
+      lb: document.getElementById("set-leaderboard")?.checked,
+      hints: document.getElementById("set-hints")?.checked,
+      showRank: document.getElementById("set-showrank")?.checked,
+      lbCount: document.getElementById("set-lbcount")?.value,
+      adminCode: document.getElementById("set-admin-code")?.value,
+      adminPass: document.getElementById("set-admin-pass")?.value,
+    };
+  }
+  let _settingsSnapshotOnOpen = null;
+
   // Save settings + data
   $("#btn-save-settings").addEventListener("click", ()=>{
-    let newData=null;
-    try{
-      newData = JSON.parse(setData.value || "{}");
-      if(!Array.isArray(newData.items) || !Array.isArray(newData.categories)) throw new Error("schema");
-    }catch(e){ alert("JSON সঠিক নয়। items এবং categories অবশ্যই array হতে হবে।"); return; }
-
+    // Don't validate JSON here — Game Data is saved separately
     const _setTime=document.getElementById("set-time");
     const _setNeeded=document.getElementById("set-needed");
     const _setLives=document.getElementById("set-lives");
@@ -2968,6 +3211,16 @@
     const diffPreset = _setDiff?.value || "normal";
     const presets = { easy:{timeLimit:45,maxLives:5,traySize:14}, normal:{timeLimit:30,maxLives:3,traySize:18}, hard:{timeLimit:18,maxLives:2,traySize:24} };
     const p = presets[diffPreset] || {};
+    // Build change summary for confirmation
+    const prevSnap = _settingsSnapshotOnOpen || {};
+    const nowSnap = getSettingsSnapshot();
+    const changes = [];
+    const labels = {time:"Time Limit",needed:"Items to Find",lives:"Lives",traySize:"Tray Size",diff:"Difficulty",lb:"Leaderboard",hints:"Show Hints",showRank:"Show Rank",lbCount:"Leaderboard Count",adminCode:"Admin Code",adminPass:"Password"};
+    Object.keys(nowSnap).forEach(k=>{ if(String(nowSnap[k])!==String(prevSnap[k])) changes.push(labels[k]||k); });
+    if(changes.length){
+      if(!confirm("পরিবর্তন: " + changes.join(", ") + "\n\nসেভ করবো?")) return;
+    }
+
     settings = {
       ...settings,
       timeLimit:   diffPreset!=="custom" ? p.timeLimit   : clamp(parseInt(_setTime?.value||settings.timeLimit,10)||settings.timeLimit, 5, 120),
@@ -2979,11 +3232,11 @@
       difficultyPreset: diffPreset,
       showLeaderboard: _setLb ? _setLb.checked : true,
       showHints:       _setHints ? _setHints.checked : true,
+      showRank:        document.getElementById("set-showrank")?.checked ?? true,
+      lbCount:         clamp(parseInt(document.getElementById("set-lbcount")?.value||10,10)||10, 5, 100),
     };
 
-    data = { ...structuredClone(defaultData), ...newData };
     saveJSON(KEYS.settings, settings);
-    saveJSON(KEYS.data, data);
     buildMaps();
     renderMenu();
     syncSettingsUI();
@@ -2995,21 +3248,48 @@
   async function downloadExcel(){
     if(typeof XLSX==="undefined"){ alert("Excel library not loaded."); return; }
 
-    // Pull all Firebase runs for leaderboard + play history
+    // Pull ALL Firebase runs — no limit, ordered client-side by ts
     let allRuns = [];
     if(firebaseReady){
       try{
-        const snap = await db.ref(`${publicPath()}/runs`).orderByChild("ts").get();
+        const snap = await db.ref(`${publicPath()}/runs`).get();
         if(snap.exists()){
-          allRuns = Object.entries(snap.val()||{}).map(([k,v])=>({_key:k,...v}))
-                         .sort((a,b)=>(a.ts||0)-(b.ts||0));
+          allRuns = Object.entries(snap.val()||{})
+            .map(([k,v])=>({ _key:k, ...v }))
+            .sort((a,b)=>(a.ts||0)-(b.ts||0));
         }
-      }catch(e){ console.warn("Export: Firebase runs fetch failed", e); }
+        console.log(`Export: fetched ${allRuns.length} runs from Firebase`);
+      }catch(e){
+        console.error("Export: Firebase runs fetch failed", e);
+        alert("⚠️ Firebase থেকে ডেটা নামাতে পারেনি। Wi-Fi চেক করো এবং আবার চেষ্টা করো।");
+        return;
+      }
+    } else {
+      alert("⚠️ Firebase সংযুক্ত নেই — শুধু local ডেটা export হবে।");
     }
 
     const wb   = XLSX.utils.book_new();
     const date = new Date().toISOString().slice(0,10);
     const now  = new Date().toLocaleString("bn-BD",{timeZone:"Asia/Dhaka"});
+
+    // ── Derive ALL aggregates from Firebase allRuns (cross-device truth) ──
+    const fbCatPlays  = {};  // categoryId  → total runs
+    const fbMallPlays = {};  // mallId       → total runs
+    const fbPayPlays  = {};  // paymentId    → total runs
+    const fbGames     = allRuns.length;
+    const fbWins      = allRuns.filter(r=>r.win).length;
+    const fbLosses    = allRuns.filter(r=>!r.win && !(r.timeout)).length;
+    const fbTimeouts  = allRuns.filter(r=>r.timeout).length;
+    const fbTotalT    = allRuns.reduce((s,r)=>s+(r.timeSec||0),0);
+    const fbBestT     = allRuns.filter(r=>r.win).reduce((b,r)=>Math.min(b,r.timeSec||999),999);
+    allRuns.forEach(r=>{
+      if(r.categoryId)  fbCatPlays[r.categoryId]  = (fbCatPlays[r.categoryId] ||0)+1;
+      if(r.mallId)      fbMallPlays[r.mallId]      = (fbMallPlays[r.mallId]    ||0)+1;
+      if(r.paymentId)   fbPayPlays[r.paymentId]    = (fbPayPlays[r.paymentId]  ||0)+1;
+    });
+    const fbTotalMallPlays = Object.values(fbMallPlays).reduce((s,v)=>s+v,0)||1;
+    const fbTotalPayPlays  = Object.values(fbPayPlays).reduce((s,v)=>s+v,0)||1;
+    const fbTotalCatPlays  = Object.values(fbCatPlays).reduce((s,v)=>s+v,0)||1;
 
     // ── helper: apply header style row ──────────────────────────
     function makeSheet(rows){
@@ -3026,43 +3306,46 @@
     // ══════════════════════════════════════════════════════════════
     // SHEET 1 — Summary Dashboard
     // ══════════════════════════════════════════════════════════════
-    const wr = stats.games ? +(stats.wins/stats.games*100).toFixed(1) : 0;
-    const avgT = stats.games && stats.totalTimeSec ? +(stats.totalTimeSec/stats.games).toFixed(2) : 0;
-    const lossRate = stats.games ? +(stats.losses/stats.games*100).toFixed(1) : 0;
-    const timeoutRate = stats.games ? +(stats.timeouts/stats.games*100).toFixed(1) : 0;
-    const cp = stats.catPlays||{};
-    const mp = stats.mallPlays||{};
-    const topCat = (data.categories||[]).reduce((top,c)=>{ const n=cp[c.id]||0; return n>top.n?{id:c.id,title:c.title,n}:top; },{n:-1,title:"—"});
-    const topMall = (data.malls||[]).reduce((top,m)=>{ const n=mp[m.id]||0; return n>top.n?{id:m.id,name:m.name,n}:top; },{n:-1,name:"—"});
-    const winsOnly = allRuns.filter(r=>r.win);
-    const bestFB = winsOnly.length ? Math.min(...winsOnly.map(r=>r.timeSec||99)).toFixed(2) : "—";
+    // All summary metrics derived from Firebase allRuns (cross-device)
+    const winsOnly    = allRuns.filter(r=>r.win);
+    const bestFB      = winsOnly.length ? Math.min(...winsOnly.map(r=>r.timeSec||999)).toFixed(2) : "—";
+    const wr          = fbGames ? +(fbWins/fbGames*100).toFixed(1) : 0;
+    const avgT        = fbGames ? +(fbTotalT/fbGames).toFixed(2) : 0;
+    const lossRate    = fbGames ? +(fbLosses/fbGames*100).toFixed(1) : 0;
+    const timeoutRate = fbGames ? +(fbTimeouts/fbGames*100).toFixed(1) : 0;
+    const topCat  = (data.categories||[]).reduce((top,c)=>{
+      const n=fbCatPlays[c.id]||0; return n>top.n?{id:c.id,title:c.title,n}:top;
+    },{n:-1,title:"—"});
+    const topMall = (data.malls||[]).reduce((top,m)=>{
+      const n=fbMallPlays[m.id]||0; return n>top.n?{id:m.id,name:m.name,n}:top;
+    },{n:-1,name:"—"});
     XLSX.utils.book_append_sheet(wb, makeSheet([
       ["🎮 Eid Shopping Game — Export Report", "", `Generated: ${now}`],
       [],
       ["METRIC","VALUE","NOTES"],
       ["Export Date", date, ""],
-      ["Total Games Played", stats.games||0, "local device"],
-      ["Total Wins", stats.wins||0, ""],
-      ["Total Losses", stats.losses||0, ""],
-      ["Timeouts", stats.timeouts||0, ""],
-      ["Win Rate", wr+"%", ""],
-      ["Loss Rate", lossRate+"%", ""],
-      ["Timeout Rate", timeoutRate+"%", ""],
-      ["Avg Time / Game (s)", avgT, ""],
-      ["Best Win Time (s)", stats.bestTimeSec?+stats.bestTimeSec.toFixed(2):bestFB, ""],
-      ["Total Play Time (s)", +(stats.totalTimeSec||0).toFixed(2), ""],
+      ["Total Games Played",   fbGames,                              "all devices (Firebase)"],
+      ["Total Wins",           fbWins,                               ""],
+      ["Total Losses",         fbLosses,                             ""],
+      ["Timeouts",             fbTimeouts,                           ""],
+      ["Win Rate",             wr+"%",                               ""],
+      ["Loss Rate",            lossRate+"%",                         ""],
+      ["Timeout Rate",         timeoutRate+"%",                      ""],
+      ["Avg Time / Game (s)",  avgT,                                 ""],
+      ["Best Win Time (s)",    fbBestT<999 ? +fbBestT.toFixed(2) : "—", ""],
+      ["Total Play Time (s)",  +fbTotalT.toFixed(2),                 ""],
       [],
       ["LEADERBOARD STATS","",""],
-      ["All-time Runs (Firebase)", allRuns.length, ""],
-      ["Total Firebase Wins", winsOnly.length, ""],
-      ["All-time Best Win (s)", bestFB, "from Firebase"],
+      ["All-time Runs (Firebase)", fbGames,          "all devices"],
+      ["Total Firebase Wins",     fbWins,           ""],
+      ["All-time Best Win (s)",   fbBestT<999?+fbBestT.toFixed(2):"—", "from Firebase"],
       [],
       ["ENGAGEMENT","",""],
       ["Most Played Category", topCat.title||topCat.id||"—", `${topCat.n} plays`],
       ["Most Chosen Mall", topMall.name||topMall.id||"—", `${topMall.n} plays`],
-      ["Most Used Payment", (()=>{ const pp2=stats.payPlays||{}; const top=(data.paymentMethods||[]).reduce((t,m)=>{ const n=pp2[m.id]||0; return n>t.n?{n,label:m.label}:t; },{n:-1,label:"—"}); return top.label; })(), ""],
-      ["Categories Tried", Object.keys(cp).length, `of ${(data.categories||[]).length}`],
-      ["Malls Tried", Object.keys(mp).length, `of ${(data.malls||[]).length}`],
+      ["Most Used Payment", (()=>{ const top=(data.paymentMethods||[]).reduce((t,m)=>{ const n=fbPayPlays[m.id]||0; return n>t.n?{n,label:m.label}:t; },{n:-1,label:"—"}); return top.label; })(), ""],
+      ["Categories Tried", Object.keys(fbCatPlays).length,  `of ${(data.categories||[]).length}`],
+      ["Malls Tried",      Object.keys(fbMallPlays).length, `of ${(data.malls||[]).length}`],
       [],
       ["SETTINGS SNAPSHOT","",""],
       ["Difficulty Preset", settings.difficultyPreset||"normal", ""],
@@ -3077,14 +3360,17 @@
     // ══════════════════════════════════════════════════════════════
     const sortedWins = [...winsOnly].sort((a,b)=>(a.timeSec||99)-(b.timeSec||99));
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["RANK","PLAYER","CATEGORY","MALL","TIME (s)","LIVES USED","DATE"],
+      ["RANK","PLAYER","AGE","GENDER","CATEGORY","MALL","PAYMENT","TIME (s)","LIVES USED","DATE"],
       ...sortedWins.map((r,i)=>[
         i+1,
-        r.name||"Player",
-        r.categoryTitle||r.categoryId||"",
-        r.mallName||r.mallId||"—",
-        r.timeSec?+r.timeSec.toFixed(2):"",
-        r.livesUsed??0,
+        r.name         || "Player",
+        r.age          || "—",
+        r.gender       || "—",
+        r.categoryTitle|| r.categoryId || "—",
+        r.mallName     || r.mallId     || "—",
+        r.paymentLabel || r.paymentId  || "—",
+        r.timeSec      ? +r.timeSec.toFixed(2) : "",
+        r.livesUsed    ?? 0,
         r.ts ? new Date(r.ts).toLocaleString("en-BD",{timeZone:"Asia/Dhaka"}) : "",
       ])
     ]), "Leaderboard");
@@ -3093,16 +3379,18 @@
     // SHEET 3 — Full Play History (all runs, chronological)
     // ══════════════════════════════════════════════════════════════
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["#","PLAYER","CATEGORY","MALL","PAYMENT","RESULT","TIME (s)","LIVES USED","DATE & TIME"],
+      ["#","PLAYER","AGE","GENDER","CATEGORY","MALL","PAYMENT","RESULT","TIME (s)","LIVES USED","DATE & TIME"],
       ...allRuns.map((r,i)=>[
         i+1,
-        r.name||"Player",
-        r.categoryTitle||r.categoryId||"",
-        r.mallName||r.mallId||"—",
-        r.paymentLabel||r.paymentId||"—",
+        r.name        || "Player",              // PLAYER
+        r.age         || "—",                   // AGE  ← was wrong (had categoryTitle here)
+        r.gender      || "—",                   // GENDER ← was wrong (had mallName here)
+        r.categoryTitle || r.categoryId || "—", // CATEGORY ← was wrong (had paymentLabel here)
+        r.mallName    || r.mallId    || "—",    // MALL ← was wrong (had age here)
+        r.paymentLabel|| r.paymentId || "—",    // PAYMENT ← was wrong (had gender here)
         r.win ? "✓ WIN" : "✗ LOSS",
-        r.timeSec?+r.timeSec.toFixed(2):"",
-        r.livesUsed??0,
+        r.timeSec     ? +r.timeSec.toFixed(2) : "",
+        r.livesUsed   ?? 0,
         r.ts ? new Date(r.ts).toLocaleString("en-BD",{timeZone:"Asia/Dhaka"}) : "",
       ])
     ]), "Play History");
@@ -3112,17 +3400,18 @@
     // ══════════════════════════════════════════════════════════════
     const cats = data.categories||[];
     const catRows = cats.map(c=>{
-      const played = cp[c.id]||0;
-      const cWins  = allRuns.filter(r=>r.categoryId===c.id && r.win);
-      const cAll   = allRuns.filter(r=>r.categoryId===c.id);
-      const fbWR   = cAll.length ? +(cWins.length/cAll.length*100).toFixed(1) : "—";
-      const bestT  = cWins.length ? +Math.min(...cWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
-      const avgTs  = cWins.length ? +(cWins.reduce((s,r)=>s+(r.timeSec||0),0)/cWins.length).toFixed(2) : "—";
-      const shareOfPlays = (stats.games||0) ? +(played/(stats.games)*100).toFixed(1) : "—";
-      return [c.title||c.id, played, shareOfPlays+"%", fbWR+(fbWR!=="—"?"%":""), bestT, avgTs, c.correct?.length||0];
-    }).sort((a,b)=>b[1]-a[1]); // sort by plays desc
+      const played   = fbCatPlays[c.id]||0;                          // Firebase cross-device count
+      const cAll     = allRuns.filter(r=>r.categoryId===c.id);
+      const cWins    = cAll.filter(r=>r.win);
+      const winRate  = cAll.length ? +(cWins.length/cAll.length*100).toFixed(1) : "—";
+      const bestT    = cWins.length ? +Math.min(...cWins.map(r=>r.timeSec||999)).toFixed(2) : "—";
+      const avgTs    = cWins.length ? +(cWins.reduce((s,r)=>s+(r.timeSec||0),0)/cWins.length).toFixed(2) : "—";
+      const sharePct = fbTotalCatPlays ? +(played/fbTotalCatPlays*100).toFixed(1) : "—";
+      return [c.title||c.id, played, cAll.length, cWins.length,
+              sharePct+"%", winRate+(winRate!=="—"?"%":""), bestT, avgTs, c.correct?.length||0];
+    }).sort((a,b)=>b[1]-a[1]);
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["CATEGORY","LOCAL PLAYS","% OF ALL PLAYS","FB WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","ITEM POOL SIZE"],
+      ["CATEGORY","TOTAL PLAYS","TOTAL RUNS","WINS","% OF ALL PLAYS","WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","ITEM POOL SIZE"],
       ...catRows
     ]), "Category Performance");
 
@@ -3131,17 +3420,18 @@
     // ══════════════════════════════════════════════════════════════
     const malls = data.malls||[];
     const mallRows = malls.map(m=>{
-      const played   = mp[m.id]||0;
+      const played   = fbMallPlays[m.id]||0;                         // Firebase cross-device count
       const mAll     = allRuns.filter(r=>r.mallId===m.id);
       const mWins    = mAll.filter(r=>r.win);
-      const fbWR     = mAll.length ? +(mWins.length/mAll.length*100).toFixed(1) : "—";
-      const bestT    = mWins.length ? +Math.min(...mWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
-      const share    = Object.values(mp).reduce((s,v)=>s+v,0)||1;
-      const sharePct = +(played/share*100).toFixed(1);
-      return [m.name||m.id, m.tagline||"", played, sharePct+"%", mAll.length, fbWR+(fbWR!=="—"?"%":""), bestT, m.floors||""];
-    }).sort((a,b)=>b[2]-a[2]);
+      const winRate  = mAll.length ? +(mWins.length/mAll.length*100).toFixed(1) : "—";
+      const bestT    = mWins.length ? +Math.min(...mWins.map(r=>r.timeSec||999)).toFixed(2) : "—";
+      const avgT     = mWins.length ? +(mWins.reduce((s,r)=>s+(r.timeSec||0),0)/mWins.length).toFixed(2) : "—";
+      const sharePct = +(played/fbTotalMallPlays*100).toFixed(1);
+      return [m.name||m.id, m.tagline||"", played, mAll.length, mWins.length,
+              sharePct+"%", winRate+(winRate!=="—"?"%":""), bestT, avgT, m.floors||""];
+    }).sort((a,b)=>b[1]-a[1]);
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["MALL","TAGLINE","LOCAL PLAYS","% OF MALL PLAYS","FB TOTAL RUNS","FB WIN RATE","BEST WIN TIME (s)","FLOORS"],
+      ["MALL","TAGLINE","TOTAL PLAYS","TOTAL RUNS","WINS","% OF ALL MALL PLAYS","WIN RATE","BEST WIN TIME (s)","AVG WIN TIME (s)","FLOORS"],
       ...mallRows
     ]), "Mall Performance");
 
@@ -3150,21 +3440,43 @@
     // ══════════════════════════════════════════════════════════════
     const playerMap = {};
     allRuns.forEach(r=>{
-      const n = r.name||"Player";
-      if(!playerMap[n]) playerMap[n]={name:n,plays:0,wins:0,totalT:0,bestT:99,cats:new Set(),malls:new Set()};
+      const n = (r.name||"Player").trim();
+      if(!playerMap[n]) playerMap[n]={
+        name:n, age:r.age||"—", gender:r.gender||"—",
+        plays:0, wins:0, totalT:0, bestT:999,
+        cats:new Set(), malls:new Set(), payments:new Set()
+      };
       const p=playerMap[n];
+      // update age/gender if we have it and didn't before
+      if(r.age    && p.age    ==="—") p.age    = r.age;
+      if(r.gender && p.gender ==="—") p.gender = r.gender;
       p.plays++;
-      if(r.win){ p.wins++; p.totalT+=(r.timeSec||0); p.bestT=Math.min(p.bestT,r.timeSec||99); }
-      if(r.categoryId) p.cats.add(r.categoryId);
-      if(r.mallId) p.malls.add(r.mallId);
+      if(r.win){
+        p.wins++;
+        p.totalT += (r.timeSec||0);
+        p.bestT   = Math.min(p.bestT, r.timeSec||999);
+      }
+      if(r.categoryId)  p.cats.add(r.categoryId);
+      if(r.mallId)      p.malls.add(r.mallId);
+      if(r.paymentId)   p.payments.add(r.paymentId);
     });
     const playerRows = Object.values(playerMap)
-      .map(p=>([p.name, p.plays, p.wins, p.plays?+(p.wins/p.plays*100).toFixed(1)+"%":"0%",
-        p.wins?+p.bestT.toFixed(2):"—", p.wins?+(p.totalT/p.wins).toFixed(2):"—",
-        p.cats.size, p.malls.size]))
-      .sort((a,b)=>b[2]-a[2]);
+      .map(p=>([
+        p.name,
+        p.age,
+        p.gender,
+        p.plays,
+        p.wins,
+        p.plays ? +(p.wins/p.plays*100).toFixed(1)+"%" : "0%",
+        p.wins  ? +p.bestT.toFixed(2) : "—",
+        p.wins  ? +(p.totalT/p.wins).toFixed(2) : "—",
+        p.cats.size,
+        p.malls.size,
+        p.payments.size,
+      ]))
+      .sort((a,b)=>b[4]-a[4]); // sort by wins desc
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["PLAYER","TOTAL PLAYS","WINS","WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","CATEGORIES TRIED","MALLS TRIED"],
+      ["PLAYER","AGE","GENDER","TOTAL PLAYS","WINS","WIN RATE","BEST TIME (s)","AVG WIN TIME (s)","CATEGORIES TRIED","MALLS TRIED","PAYMENT METHODS USED"],
       ...playerRows
     ]), "Player Rankings");
 
@@ -3205,19 +3517,19 @@
     ]), "Settings");
 
     // Sheet: Payment Methods Performance
-    const ppData = stats.payPlays||{};
     const payRows2 = (data.paymentMethods||[]).map(m=>{
-      const played   = ppData[m.id]||0;
+      const played   = fbPayPlays[m.id]||0;                          // Firebase cross-device count
       const pAll     = allRuns.filter(r=>r.paymentId===m.id);
       const pWins    = pAll.filter(r=>r.win);
-      const fbWR     = pAll.length ? +(pWins.length/pAll.length*100).toFixed(1) : "—";
-      const bestT    = pWins.length ? +Math.min(...pWins.map(r=>r.timeSec||99)).toFixed(2) : "—";
-      const shareT   = Object.values(ppData).reduce((s,v)=>s+v,0)||1;
-      const sharePct = +(played/shareT*100).toFixed(1);
-      return [m.label||m.id, m.sub||"", played, sharePct+"%", pAll.length, fbWR+(fbWR!=="—"?"%":""), bestT];
-    }).sort((a,b)=>b[2]-a[2]);
+      const winRate  = pAll.length ? +(pWins.length/pAll.length*100).toFixed(1) : "—";
+      const bestT    = pWins.length ? +Math.min(...pWins.map(r=>r.timeSec||999)).toFixed(2) : "—";
+      const avgT     = pWins.length ? +(pWins.reduce((s,r)=>s+(r.timeSec||0),0)/pWins.length).toFixed(2) : "—";
+      const sharePct = +(played/fbTotalPayPlays*100).toFixed(1);
+      return [m.label||m.id, m.sub||"", played, pAll.length, pWins.length,
+              sharePct+"%", winRate+(winRate!=="—"?"%":""), bestT, avgT];
+    }).sort((a,b)=>b[1]-a[1]);
     XLSX.utils.book_append_sheet(wb, makeSheet([
-      ["PAYMENT METHOD","DESCRIPTION","LOCAL USES","% OF PAYMENT USES","FB TOTAL RUNS","FB WIN RATE","BEST WIN TIME (s)"],
+      ["PAYMENT METHOD","DESCRIPTION","TOTAL USES","TOTAL RUNS","WINS","% OF ALL PAYMENT USES","WIN RATE","BEST WIN TIME (s)","AVG WIN TIME (s)"],
       ...payRows2
     ]), "Payment Methods");
 
@@ -3231,7 +3543,15 @@
     downloadExcel().finally(()=>{ if(btn){ btn.disabled=false; btn.textContent="📥 Export Excel"; } });
   });
 
-  function init(){ renderMenu(); syncSettingsUI(); show("landing"); initFirebase(); }
+  function init(){
+    renderMenu();
+    syncSettingsUI();
+    // Explicitly ensure landing lb button reflects current settings on load
+    const _lbLanding = document.getElementById("btn-landing-lb");
+    if(_lbLanding) _lbLanding.style.display = (settings.showLeaderboard !== false) ? "" : "none";
+    show("landing");
+    initFirebase();
+  }
   init();
 })();
 </script>
