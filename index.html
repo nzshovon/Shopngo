@@ -1836,10 +1836,12 @@
   const now=()=>performance.now();
 
   // v11: clear stale localStorage so password defaults are clean
-  (function(){ const VER="eid_v29"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
+  (function(){ const VER="eid_v30"; if(localStorage.getItem(VER)!=="1"){ localStorage.removeItem("eid_shop_settings_prod"); localStorage.removeItem("eid_shop_data_prod"); localStorage.removeItem("eid_shop_stats_prod"); localStorage.setItem(VER,"1"); } })();
   const KEYS = { settings:"eid_shop_settings_prod", stats:"eid_shop_stats_prod", data:"eid_shop_data_prod" };
   const defaultSettings = { adminCode:"admin", adminPass:"123456", timeLimit:30, neededCount:5, maxLives:3, traySize:18, showLeaderboard:true, difficultyPreset:"normal", showRank:true, lbCount:10 };
   const defaultStats = { games:0, wins:0, losses:0, timeouts:0, totalTimeSec:0, bestTimeSec:0, catPlays:{}, mallPlays:{}, payPlays:{} };
+  // liveStats: cross-device Firebase-derived counts (refreshed on settings open)
+  let liveStats = null;  // null = not yet fetched; populated by refreshLiveStats()
 
   // Sprite positions in the sheet (8x4 tiles, 128px each)
   const SPR_INDEX = {
@@ -2145,6 +2147,42 @@
       };
       await ref.set(record);
     }catch(e){ console.warn("logResult failed:", e); }
+  }
+
+  // Fetch all Firebase runs and build cross-device aggregates into liveStats
+  async function refreshLiveStats(){
+    if(!firebaseReady){
+      liveStats = null;
+      return;
+    }
+    try{
+      const snap = await db.ref(`${publicPath()}/runs`).get();
+      const allRuns = snap.exists()
+        ? Object.values(snap.val()||{})
+        : [];
+      const catPlays = {}, mallPlays = {}, payPlays = {};
+      let games=0, wins=0, losses=0, timeouts=0, totalTimeSec=0, bestTimeSec=0;
+      allRuns.forEach(r=>{
+        games++;
+        if(r.win){
+          wins++;
+          totalTimeSec += (r.timeSec||0);
+          if(!bestTimeSec || r.timeSec < bestTimeSec) bestTimeSec = r.timeSec||0;
+        } else if(r.timeout){
+          timeouts++;
+        } else {
+          losses++;
+        }
+        if(r.categoryId) catPlays[r.categoryId]  = (catPlays[r.categoryId] ||0)+1;
+        if(r.mallId)     mallPlays[r.mallId]      = (mallPlays[r.mallId]   ||0)+1;
+        if(r.paymentId)  payPlays[r.paymentId]    = (payPlays[r.paymentId] ||0)+1;
+      });
+      liveStats = { games, wins, losses, timeouts, totalTimeSec, bestTimeSec,
+                    catPlays, mallPlays, payPlays };
+    } catch(e){
+      console.warn("refreshLiveStats failed:", e);
+      liveStats = null;
+    }
   }
 
   function buildLbHtml(winners){
@@ -2836,30 +2874,32 @@
     // Show/hide leaderboard button on menu
     const lbBtn = document.getElementById("btn-leaderboard");
     if(lbBtn) lbBtn.style.display = settings.showLeaderboard ? "" : "none";
-    renderStatTiles();
-    renderCatBars();
-    renderMallBars();
-    renderPayBars();
+    // Pass liveStats (Firebase cross-device) if available, else local stats as fallback
+    const ls = liveStats;
+    renderStatTiles(ls);
+    renderCatBars(ls);
+    renderMallBars(ls);
+    renderPayBars(ls);
     renderLeaderboardInSettings();
   }
 
-  function renderStatTiles(){
+  function renderStatTiles(ls){
     const g = document.getElementById("statGrid");
     if(!g) return;
-    const st = stats;
+    const st = ls || stats;  // prefer liveStats (Firebase) over local stats
     const winRate = st.games ? Math.round((st.wins/st.games)*100) : 0;
-    const avgTime = st.wins && st.totalTimeSec ? (st.totalTimeSec/st.games).toFixed(1) : "—";
+    const avgTime = st.wins && st.totalTimeSec ? (st.totalTimeSec/st.wins).toFixed(1) : "—";
     const best    = st.bestTimeSec ? st.bestTimeSec.toFixed(2)+"s" : "—";
     const tiles = [
-      { v: st.games||0,            k:"Total Played",    cls:"" },
-      { v: (st.wins||0),           k:"Wins",            cls:"green" },
-      { v: (st.losses||0),         k:"Losses",          cls:"red" },
-      { v: (st.timeouts||0),       k:"Timeouts",        cls:"red" },
-      { v: winRate+"%",            k:"Win Rate",        cls:"blue" },
-      { v: avgTime+"s",            k:"Avg Time",        cls:"" },
-      { v: best,                   k:"Best Win Time",   cls:"green" },
-      { v: Object.keys(st.catPlays||{}).length||0, k:"Categories Used", cls:"blue" },
-      { v: Object.keys(st.mallPlays||{}).length||0, k:"Malls Visited",   cls:"blue" },
+      { v: st.games||0,                                    k:"Total Played",    cls:"" },
+      { v: st.wins||0,                                     k:"Wins",            cls:"green" },
+      { v: st.losses||0,                                   k:"Losses",          cls:"red" },
+      { v: st.timeouts||0,                                 k:"Timeouts",        cls:"red" },
+      { v: winRate+"%",                                    k:"Win Rate",        cls:"blue" },
+      { v: avgTime+(avgTime!=="—"?"s":""),                 k:"Avg Win Time",    cls:"" },
+      { v: best,                                           k:"Best Win Time",   cls:"green" },
+      { v: Object.keys(st.catPlays||{}).length||0,         k:"Categories Used", cls:"blue" },
+      { v: Object.keys(st.mallPlays||{}).length||0,        k:"Malls Visited",   cls:"blue" },
     ];
     g.innerHTML = tiles.map(t=>`
       <div class="statTile ${t.cls}">
@@ -2868,17 +2908,17 @@
       </div>`).join("");
   }
 
-  function renderCatBars(){
+  function renderCatBars(ls){
     const el = document.getElementById("catBarList");
     if(!el) return;
-    const cp = stats.catPlays||{};
+    const cp = (ls||stats).catPlays||{};
     const cats = [...(data.categories||[])].sort((a,b)=>(cp[b.id]||0)-(cp[a.id]||0));
-    const max = Math.max(1, ...cats.map(c=>cp[c.id]||0));
+    const max   = Math.max(1, ...cats.map(c=>cp[c.id]||0));
     const total = cats.reduce((s,c)=>s+(cp[c.id]||0),0)||1;
     if(!cats.length){ el.innerHTML = '<div class="tiny">No data yet.</div>'; return; }
-    el.innerHTML = cats.map((c,i)=>{
+    el.innerHTML = cats.map(c=>{
       const n = cp[c.id]||0;
-      const pct = Math.round((n/max)*100);
+      const pct      = Math.round((n/max)*100);
       const sharePct = Math.round((n/total)*100);
       return `<div class="catBarRow">
         <div class="catBarLabel">${escapeHtml(c.title||c.id)}</div>
@@ -2888,17 +2928,17 @@
     }).join("");
   }
 
-  function renderMallBars(){
+  function renderMallBars(ls){
     const el = document.getElementById("mallBarList");
     if(!el) return;
-    const mp = stats.mallPlays||{};
+    const mp = (ls||stats).mallPlays||{};
     const malls = [...(data.malls||[])].sort((a,b)=>(mp[b.id]||0)-(mp[a.id]||0));
-    const max = Math.max(1, ...malls.map(m=>mp[m.id]||0));
+    const max   = Math.max(1, ...malls.map(m=>mp[m.id]||0));
     const total = malls.reduce((s,m)=>s+(mp[m.id]||0),0)||1;
     if(!malls.length){ el.innerHTML = '<div class="tiny">No malls configured.</div>'; return; }
-    el.innerHTML = malls.map((m,i)=>{
+    el.innerHTML = malls.map(m=>{
       const n = mp[m.id]||0;
-      const pct = Math.round((n/max)*100);
+      const pct      = Math.round((n/max)*100);
       const sharePct = Math.round((n/total)*100);
       return `<div class="catBarRow">
         <div class="catBarLabel">${escapeHtml(m.name||m.id)}</div>
@@ -2908,17 +2948,17 @@
     }).join("");
   }
 
-  function renderPayBars(){
+  function renderPayBars(ls){
     const el = document.getElementById("payBarList");
     if(!el) return;
-    const pp = stats.payPlays||{};
+    const pp = (ls||stats).payPlays||{};
     const methods = [...(data.paymentMethods||[])].sort((a,b)=>(pp[b.id]||0)-(pp[a.id]||0));
     const max   = Math.max(1, ...methods.map(m=>pp[m.id]||0));
     const total = methods.reduce((s,m)=>s+(pp[m.id]||0),0)||1;
     if(!methods.length){ el.innerHTML='<div class="tiny">No payment data yet.</div>'; return; }
-    el.innerHTML = methods.map((m,i)=>{
+    el.innerHTML = methods.map(m=>{
       const n = pp[m.id]||0;
-      const pct = Math.round((n/max)*100);
+      const pct   = Math.round((n/max)*100);
       const share = Math.round((n/total)*100);
       return `<div class="catBarRow">
         <div class="catBarLabel">${escapeHtml(m.label||m.id)}</div>
@@ -2928,7 +2968,24 @@
     }).join("");
   }
 
-  function openSettings(){ syncSettingsUI(); _settingsSnapshotOnOpen = getSettingsSnapshot(); show("settings"); }
+  async function openSettings(){
+    _settingsSnapshotOnOpen = getSettingsSnapshot();
+    show("settings");
+    // Show settings immediately with local data, then refresh from Firebase
+    syncSettingsUI();
+    // Async Firebase refresh — re-render stats when done
+    if(firebaseReady){
+      const statGrid = document.getElementById("statGrid");
+      if(statGrid) statGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:16px;color:#9CA3AF;font-size:12px;">⏳ Firebase থেকে ডেটা আনা হচ্ছে…</div>';
+      await refreshLiveStats();
+      // Re-render all stat panels with fresh Firebase data
+      const ls = liveStats;
+      renderStatTiles(ls);
+      renderCatBars(ls);
+      renderMallBars(ls);
+      renderPayBars(ls);
+    }
+  }
 
   function openPassGate(){ 
     AudioSvc.unlock(); 
@@ -3171,11 +3228,17 @@
     if(!confirm("সব পরিসংখ্যান মুছে দেওয়া হবে। নিশ্চিত?")) return;
     stats = structuredClone(defaultStats);
     saveJSON(KEYS.stats, stats);
+    liveStats = null;
     pushRemote("reset-stats");
-    renderStatTiles();
-    renderCatBars();
-    renderMallBars();
-    renderPayBars();
+    // Re-fetch from Firebase so panel shows actual cross-device truth after reset
+    (async ()=>{
+      await refreshLiveStats();
+      const ls = liveStats;
+      renderStatTiles(ls);
+      renderCatBars(ls);
+      renderMallBars(ls);
+      renderPayBars(ls);
+    })();
   });
 
   // Track which settings fields changed for confirmation
